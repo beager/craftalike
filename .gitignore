@@ -1,6 +1,6 @@
 *.class
 
 # Package Files #
-*.jar
+#previously had ignored .jar files, but jars in libs need to be added
 *.war
 *.ear
