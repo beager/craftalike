@@ -1,6 +1,5 @@
 package game;
 
-import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.opengl.Texture;
 
 public class MultiTextureCube extends Cube {
@@ -15,8 +14,6 @@ public class MultiTextureCube extends Cube {
 		this.texture4 = texture4;
 		this.texture5 = texture5;
 		this.texture6 = texture6;
-		
-		// TODO Auto-generated constructor stub
 	}
 	
 	/* Renders the cube. */
@@ -24,90 +21,60 @@ public class MultiTextureCube extends Cube {
 		// Top
 		if(renderTop) {
 			Vector3f[] vertices = new Vector3f[4];
-			
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos2.y, pos2.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 		
 		// Bottom
 		if(renderBottom) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos1.y, pos2.z);
-			
 			vertices[1] = new Vector3f(pos1.x, pos1.y, pos2.z);
-			
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos1.z);
-			
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture2.getTextureID(), vertices);
 		}
 		
 		// Front
 		if(renderFront) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos2.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos2.z);
-			
 			QuadQueue.add(texture3.getTextureID(), vertices);
 		}
 		
 		// Back
 		if(renderBack) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos2.x, pos1.y, pos1.z);
-
 			vertices[3] = new Vector3f(pos1.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture4.getTextureID(), vertices);
 		}
 		
 		// Right
 		if(renderRight) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos2.x, pos2.y, pos2.z);
-
 			vertices[2] = new Vector3f(pos2.x, pos1.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture5.getTextureID(), vertices);
 		}
 		
 		// Left
 		if(renderLeft) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos1.z);
-
-			vertices[3] = new Vector3f(pos1.x, pos1.y, pos2.z);
-			
+			vertices[3] = new Vector3f(pos1.x, pos1.y, pos2.z);	
 			QuadQueue.add(texture6.getTextureID(), vertices);
 		}
 	}

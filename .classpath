@@ -8,6 +8,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/Users/beager/Documents/workspace/craftalike/libs/lwjgl-2.8.4/native/macosx"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/slick-util/slick-util.jar" sourcepath="libs/slick-util/slick-util.jar"/>
+	<classpathentry kind="lib" path="libs/slick.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

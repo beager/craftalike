@@ -9,7 +9,7 @@ import org.newdawn.slick.opengl.Texture;
 
 
 public class CubeTerrain {
-
+	
 	// Size of the terrain measured in cubes
 	public Vector3 arraySize;
 	
@@ -27,11 +27,13 @@ public class CubeTerrain {
 	private Texture grassTexture;
 	private Texture waterTexture;
 	private Texture dirtTexture;
+	private Texture dirtSideTexture;
 	
 	// Display list
 	private int displayList;
 	
 	private TextureStore textureStore;
+	private int[][] heightData;
 	
 	public CubeTerrain(Vector3 arraySize, Vector3f cubeSize, Vector3f translation, TextureStore textureStore) {
 		this.arraySize = arraySize;
@@ -54,11 +56,12 @@ public class CubeTerrain {
 		grassTexture = textureStore.getTexture("res/pix-grass.png");
 		waterTexture = textureStore.getTexture("res/pix-water.png");
 		dirtTexture = textureStore.getTexture("res/pix-dirt.png");
+		dirtSideTexture = textureStore.getTexture("res/pix-grass-side.png");
 	}
 	
 	public void generateTerrain(int maxHeight, int minHeight, int smoothLevel, int seed, float noiseSize, float persistence, int octaves, boolean textures) {
 		// Stores the height of each x, z coordinate
-		int heightData[][] = new int[arraySize.x][arraySize.z];
+		heightData = new int[arraySize.x][arraySize.z];
 		
 		// Make sure maxHeight and minHeight are within bounds of the cube array
 		if(maxHeight > arraySize.y)
@@ -117,9 +120,9 @@ public class CubeTerrain {
 		// Create the cubes
 		for(int z = 0; z < arraySize.z; z++) {
 			for(int x = 0; x < arraySize.x; x++) {
-					for(int y = heightData[x][z]; y >= 0; y--) {
-						terrain[x][y][z] = createCube(new Vector3(x, y, z), textures);
-					}
+				for(int y = heightData[x][z]; y >= 0; y--) {
+					terrain[x][y][z] = createCube(new Vector3(x, y, z), textures);
+				}
 			}
 		}
 		
@@ -200,21 +203,26 @@ public class CubeTerrain {
 		
 		if(arrayPosition.y == 0) {
 			// Dirt
-			color = new Vector4f(0.35f, 0.15f, 0.0f, 1.0f);
-			texture = dirtTexture;
+			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+			texture = stoneTexture;
 		} else if(arrayPosition.y < 3) {
 			// Water
 			color = new Vector4f(0.0f, 0.2f, 0.7f, 0.6f);
 			texture = waterTexture;
-		} else if(arrayPosition.y < 12) {
-			// Grass
-			color = new Vector4f(0.2f, 0.4f, 0.1f, 1.0f);
-			texture = grassTexture;
-			return new MultiTextureCube(pos1, pos2, color, texture, dirtTexture, dirtTexture, dirtTexture, dirtTexture, dirtTexture);
-		} else {
+		} else if (arrayPosition.y < 7) {
 			// Stone
 			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 			texture = stoneTexture;
+		} else {
+			if (heightData[arrayPosition.x][arrayPosition.z] > arrayPosition.y){
+				// Dirt
+				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+				texture = dirtTexture;
+			} else {
+				color = new Vector4f(0.2f, 0.4f, 0.1f, 1.0f);
+				texture = grassTexture;
+				return new MultiTextureCube(pos1, pos2, color, texture, dirtTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture);
+			}
 		}
 		
 		if(!textures)
@@ -229,8 +237,6 @@ public class CubeTerrain {
 		
 		// Add the translation matrix
 		GL11.glTranslatef(translation.x, translation.y, translation.z);
-		
-
 		
 		// Call the display list
 		GL11.glCallList(displayList);

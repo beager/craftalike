@@ -1,7 +1,6 @@
 package game;
 import org.lwjgl.opengl.GL11;
 
-
 public class Camera {
 
 	public static final int FORWARD = 0;
@@ -9,8 +8,8 @@ public class Camera {
 	public static final int RIGHT = 2;
 	public static final int LEFT = 3;
 	
-	public static final float MAX_GRAVITY_SPEED = 1.5f;
-	public static final float GRAVITY_ACCEL = 0.02f;
+	public static final float MAX_GRAVITY_SPEED = 1.0f;
+	public static final float GRAVITY_ACCEL = 0.01f;
 	
 	public float gravitySpeed = 0.0f;
 	public boolean grounded = false;
@@ -29,6 +28,9 @@ public class Camera {
 	
 	public void move(float delta, int direction, float gravityDelta, boolean collisionChecking, boolean flyMode) {
 		Vector3f newCoordinates = new Vector3f(coordinates.x, coordinates.y, coordinates.z);
+		
+		if (newCoordinates.y < -80.0f)
+			newCoordinates.y = 0.0f;
 		
 		if(direction == FORWARD) {
 			if(flyMode) {
