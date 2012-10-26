@@ -288,7 +288,9 @@ public class Game {
 	}
 	
 	public void render2d() {
-		
+		int width = Display.getDesktopDisplayMode().getWidth();
+		int height = Display.getDesktopDisplayMode().getHeight();
+		GL11.glOrtho(0, width, 0, height, 0, 300);
 		font.drawString(10, 10, "GetDunkedOn");	
 		
 	}
@@ -309,13 +311,12 @@ public class Game {
 	    render2d();
 	    
 	    GL11.glDisable(GL11.GL_BLEND);
-		
-		
+		GL11.glPushMatrix();
+		GL11.glPopMatrix();
 		// end do things here with 2D
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glPopMatrix();
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		//GL11.glLoadMatrix(perspectiveProjectionMatrix);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
 		GL11.glPopMatrix();
