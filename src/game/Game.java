@@ -25,7 +25,7 @@ public class Game {
 	private static final float MOVEMENT_SPEED_FLYMODE = 0.17f;
 	private static final float FALSE_GRAVITY_SPEED = 0.035f;
 	
-	private static final int CHUNK_SIZE = 128;
+	private static final int CHUNK_SIZE = 16;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = true;
@@ -70,6 +70,8 @@ public class Game {
 		}
 		
 		Display.setTitle("Craftalike");
+		
+		initGl();
 
 		// Hide the mouse
 		Mouse.setGrabbed(true);
@@ -94,7 +96,7 @@ public class Game {
 								TERRAIN_GEN_SEED, TERRAIN_GEN_NOISE_SIZE, TERRAIN_GEN_PERSISTENCE, TERRAIN_GEN_OCTAVES, TEXTURES);
 		
 		// Create the camera
-		camera = new Camera(new Vector3f(0.0f, -5.0f, 0.0f), new Vector3f(0.0f, 0.0f, 0.0f), terrain);
+		camera = new Camera(new Vector3f(-20.0f, -5.0f, -20.0f), new Vector3f(0.0f, 0.0f, 0.0f), terrain);
 		
 		// Create the skybox
 		skybox = new Skybox(new Vector3f(-50.0f, -50.0f, -50.0f), new Vector3f(50.0f, 50.0f, 50.0f), null, skyboxTexture);
@@ -216,7 +218,7 @@ public class Game {
 		//profiling.frameEnd();
 	}
 	
-	public void render3d() {
+	public void initGl() {
 		int width = Display.getDesktopDisplayMode().getWidth();
 		int height = Display.getDesktopDisplayMode().getHeight();
 		
@@ -239,10 +241,12 @@ public class Game {
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		
+	}
+	
+	public void render3d() {
 		Lighting.initLighting();
-		
 		Lighting.initFog();
+		
 		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glLoadIdentity();
@@ -284,30 +288,39 @@ public class Game {
 	}
 	
 	public void render2d() {
+		
+		font.drawString(10, 10, "GetDunkedOn");	
+		
+	}
+	
+	public void render() {
+		
+		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		//GL11.glLoadMatrix();
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glPushMatrix();
 		GL11.glLoadIdentity();
-		GL11.glDisable(GL11.GL_LIGHTING);
+		//GL11.glDisable(GL11.GL_LIGHTING);
 		// do things here with 2D
-		
-		font.drawString(10, 10, "GetDunkedOn");
+		GL11.glEnable(GL11.GL_BLEND); 
+	    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); 
+
+	    render2d();
+	    
+	    GL11.glDisable(GL11.GL_BLEND);
 		
 		
 		// end do things here with 2D
-		GL11.glEnable(GL11.GL_LIGHTING);
+		//GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glPopMatrix();
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		//GL11.glLoadMatrix(perspectiveProjectionMatrix);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
 		GL11.glPopMatrix();
-	}
-	
-	public void render() {
+		
 		render3d();
-		render2d();
 	}
 
 }
