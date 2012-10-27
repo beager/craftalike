@@ -85,7 +85,7 @@ public class Game {
 		
 		final int TERRAIN_MAX_HEIGHT = 40;
 		final int TERRAIN_MIN_HEIGHT = 8;
-		final int TERRAIN_SMOOTH_LEVEL = 5;
+		final int TERRAIN_SMOOTH_LEVEL = 10;
 		
 		final int TERRAIN_GEN_SEED = 1024;
 		final float TERRAIN_GEN_NOISE_SIZE = 2.0f;
@@ -214,44 +214,38 @@ public class Game {
 		if (sinPos < 0.4f) sinPos = 0.4f;
 		if (sinPos > 0.6f) sinPos = 0.6f;
 		sinPos = (sinPos - 0.4f) * 4.0f + 0.1f;
-		AMBIENCE_COLOR.x = sinPos;
-		AMBIENCE_COLOR.y = sinPos;
-		AMBIENCE_COLOR.z = sinPos;
+		AMBIENCE_COLOR.x = sinPos * 0.8f;
+		AMBIENCE_COLOR.y = sinPos * 0.6f;
+		AMBIENCE_COLOR.z = sinPos * 0.6f;
 		//profiling.frameEnd();
 	}
 	
 	public void initGl() {
-		int width = Display.getDesktopDisplayMode().getWidth();
-		int height = Display.getDesktopDisplayMode().getHeight();
+		
 		
 		// Initialize OpenGL
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		
-		// Set FOV
-		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
-		
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-		
-		// Set OpenGL options
+		//GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		//GL11.glLoadIdentity();
 		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
-		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		
+		// Set FOV
+		
+		
+		
+		// Set OpenGL options
+		
 	}
 	
 	public void render3d() {
-		Lighting.initLighting();
-		Lighting.initFog();
 		
-		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z + 0.2f, AMBIENCE_COLOR.a);
-		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		GL11.glLoadIdentity();
 		
 		if(wireframe)
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
@@ -268,15 +262,14 @@ public class Game {
 		if(renderSkybox)
 			skybox.render();
 		
-		GL11.glPushMatrix();
-		GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
-		GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+		//GL11.glPushMatrix();
+		//GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
+		//GL11.glEnable(GL11.GL_COLOR_MATERIAL);
 		
-		GL11.glColor3f(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z);
+		//GL11.glColor3f(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z);
 		
 		//GL11.glColor3f(1.0f, 1.0f, 1.0f);
-		GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-		
+		//GL11.glDisable(GL11.GL_COLOR_MATERIAL);
 		
 		// Set title to debug info
 		//Display.setTitle("x: " + camera.coordinates.x + " y: " + camera.coordinates.y + " z: " + camera.coordinates.z +
@@ -288,41 +281,60 @@ public class Game {
 	}
 	
 	public void render2d() {
-		int width = Display.getDesktopDisplayMode().getWidth();
-		int height = Display.getDesktopDisplayMode().getHeight();
-		GL11.glOrtho(0, width, 0, height, 0, 300);
-		font.drawString(10, 10, "GetDunkedOn");	
-		
+		//GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBegin(GL11.GL_QUADS);
+		font.drawString(50, 50, "GetDunkedOn ershisefrose fhuio srefuioesr houise fjoiserf hoiserf hoiserf oih");
+		GL11.glEnd();
+		//GL11.glDisable(GL11.GL_BLEND);
 	}
 	
 	public void render() {
-		render3d();
+		Lighting.initLighting();
+		Lighting.initFog();
+		int width = Display.getDesktopDisplayMode().getWidth();
+		int height = Display.getDesktopDisplayMode().getHeight();
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glDepthMask(true);
 		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		//GL11.glLoadMatrix();
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glPushMatrix();
+		
 		GL11.glLoadIdentity();
-		GL11.glDisable(GL11.GL_LIGHTING);
-		// do things here with 2D
-		GL11.glEnable(GL11.GL_BLEND); 
-	    GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); 
-
-	    render2d();
-	    
-	    GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPushMatrix();
-		GL11.glPopMatrix();
-		// end do things here with 2D
-		GL11.glEnable(GL11.GL_LIGHTING);
-		GL11.glPopMatrix();
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
+		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z + 0.2f, AMBIENCE_COLOR.a);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		GL11.glPushMatrix();
+		render3d();
 		GL11.glPopMatrix();
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+
+		GL11.glOrtho(0, width, 0, height, -1, 1);
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
-		
-		
+        GL11.glDisable( GL11.GL_DEPTH_TEST );
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDepthMask(false);
+        GL11.glPushMatrix();
+        
+     // Clear the screen and depth buffer
+        //GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);	
+         
+        // set the color of the quad (R,G,B,A)
+        GL11.glColor3f(0.5f,0.5f,1.0f);
+         
+        // draw quad
+        GL11.glBegin(GL11.GL_QUADS);
+            GL11.glVertex2f(100,100);
+            GL11.glVertex2f(100+200,100);
+            GL11.glVertex2f(100+200,100+200);
+            GL11.glVertex2f(100,100+200);
+        GL11.glEnd();
+        
+	    render2d();
+	    GL11.glPopMatrix();
+	    GL11.glEnable(GL11.GL_LIGHTING);
 		profiling.partBegin(displayUpdate);
 		Display.update();
 		profiling.partEnd(displayUpdate);
