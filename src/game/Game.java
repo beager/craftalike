@@ -7,6 +7,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.UnicodeFont;
 import org.newdawn.slick.font.effects.ColorEffect;
@@ -18,18 +19,18 @@ import profiling.ProfilingPart;
 
 public class Game {
 	
-	private UnicodeFont font;
-	
 	private static final float MOUSE_SPEED_SCALE = 0.1f;
 	private static final float MOVEMENT_SPEED = 0.085f;
 	private static final float MOVEMENT_SPEED_FLYMODE = 0.17f;
 	private static final float FALSE_GRAVITY_SPEED = 0.035f;
 	
-	private static final int CHUNK_SIZE = 128;
+	private static final int CHUNK_SIZE = 16;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = true;
 	private static final boolean TEXTURES = true;
+	
+	private UnicodeFont font;
 	
 	public static Vector4f AMBIENCE_COLOR = new Vector4f(0.05f, 0.05f, 0.05f, 1.0f);
 	
@@ -102,15 +103,19 @@ public class Game {
 		skybox = new Skybox(new Vector3f(-50.0f, -50.0f, -50.0f), new Vector3f(50.0f, 50.0f, 50.0f), null, skyboxTexture);
 		
 		//fonts
-		java.awt.Font awtFont = new java.awt.Font("Courier New", java.awt.Font.BOLD, 18);
-        font = new UnicodeFont(awtFont);
-        font.getEffects().add(new ColorEffect(java.awt.Color.white));
-        font.addAsciiGlyphs();
-        try {
-            font.loadGlyphs();
-        } catch (SlickException e) {
-            e.printStackTrace();
-        }
+		try {
+			font = new UnicodeFont("res/fonts/Minecraftia.ttf", 1, false, false);
+		} catch (SlickException e1) {
+			e1.printStackTrace();
+		}
+		font.addAsciiGlyphs();
+		font.addGlyphs(400,400);
+		font.getEffects().add(new ColorEffect(java.awt.Color.WHITE));
+		try {
+			font.loadGlyphs();
+		} catch (SlickException e) {
+			e.printStackTrace();
+		}
 		
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -126,11 +131,9 @@ public class Game {
 		
 		while(!Display.isCloseRequested()) {
 			// Calculate delta time
-			
 			long t = System.currentTimeMillis();
 			float deltaTime = (t - lastFrame);
 			
-			//profiling.frameBegin();
 			frameTime += deltaTime;
 			if (frameTime > frameRes)
 			{
@@ -217,17 +220,11 @@ public class Game {
 		AMBIENCE_COLOR.x = sinPos * 0.8f;
 		AMBIENCE_COLOR.y = sinPos * 0.6f;
 		AMBIENCE_COLOR.z = sinPos * 0.6f;
-		//profiling.frameEnd();
 	}
 	
 	public void initGl() {
-		
-		
-		// Initialize OpenGL
-		//GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		//GL11.glLoadIdentity();
 		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
@@ -235,18 +232,9 @@ public class Game {
 		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		
-		// Set FOV
-		
-		
-		
-		// Set OpenGL options
-		
 	}
 	
 	public void render3d() {
-		
-		
 		if(wireframe)
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 		else 
@@ -257,35 +245,10 @@ public class Game {
 		
 		// Render the terrain
 		terrain.render();
-			
-		// Render the skybox
-		if(renderSkybox)
-			skybox.render();
-		
-		//GL11.glPushMatrix();
-		//GL11.glColorMaterial(GL11.GL_FRONT_AND_BACK, GL11.GL_AMBIENT_AND_DIFFUSE);
-		//GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-		
-		//GL11.glColor3f(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z);
-		
-		//GL11.glColor3f(1.0f, 1.0f, 1.0f);
-		//GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-		
-		// Set title to debug info
-		//Display.setTitle("x: " + camera.coordinates.x + " y: " + camera.coordinates.y + " z: " + camera.coordinates.z +
-		//		" xRot: " + camera.rotation.x + " yRot: " + camera.rotation.y + " zRot: " + camera.rotation.z);
-		
-		// Updates the display, also polls the mouse and keyboard
-		
-		
 	}
 	
 	public void render2d() {
-		//GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBegin(GL11.GL_QUADS);
-		font.drawString(50, 50, "GetDunkedOn ershisefrose fhuio srefuioesr houise fjoiserf hoiserf hoiserf oih");
-		GL11.glEnd();
-		//GL11.glDisable(GL11.GL_BLEND);
+		font.drawString(10, 10, "GetDunkedOn", Color.green);
 	}
 	
 	public void render() {
@@ -317,12 +280,9 @@ public class Game {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDepthMask(false);
         GL11.glPushMatrix();
-        
-     // Clear the screen and depth buffer
-        //GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);	
-         
+
         // set the color of the quad (R,G,B,A)
-        GL11.glColor3f(0.5f,0.5f,1.0f);
+        GL11.glColor4f(0.5f,0.5f,1.0f,0.5f);
          
         // draw quad
         GL11.glBegin(GL11.GL_QUADS);
@@ -339,5 +299,4 @@ public class Game {
 		Display.update();
 		profiling.partEnd(displayUpdate);
 	}
-
 }

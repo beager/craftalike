@@ -214,15 +214,8 @@ public class CubeTerrain {
 			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 			texture = stoneTexture;
 		} else {
-			if ((heightData[arrayPosition.x][arrayPosition.z] > arrayPosition.y) | true){
-				// Dirt
-				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-				texture = dirtTexture;
-			} else {
-				color = new Vector4f(0.2f, 0.4f, 0.1f, 1.0f);
-				texture = grassTexture;
-				return new MultiTextureCube(pos1, pos2, color, texture, dirtTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture);
-			}
+			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+			texture = dirtTexture;
 		}
 		
 		if(!textures)
