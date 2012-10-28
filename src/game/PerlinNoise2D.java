@@ -23,15 +23,15 @@ public class PerlinNoise2D {
 	
 	public static float perlin2D(int x, int y, int width, int height, int seed, float noiseSize, float persistence, int octaves) {
 		float total = 0.0f;
-		
+
 		for(int i = 0; i < octaves; i++) {
 			// Calculate frequency and amplitude
 			float freq = (float) Math.pow(2, i);
 			float amp = (float) Math.pow(persistence, i);
 			
 			// Calculate x and y noise coordinates
-			float tx = x * freq;
-			float ty = y * freq;
+			float tx = x * freq * noiseSize;
+			float ty = y * freq * noiseSize;
 			float txInt = (int) tx;
 			float tyInt = (int) ty;
 			

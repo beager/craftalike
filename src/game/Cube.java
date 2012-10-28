@@ -12,17 +12,25 @@ public class Cube {
 	// Texture class from Slick-Util library
 	protected Texture texture;
 	
+	public int type;
+	
+	public static int TYPE_DIRT = 0;
+	public static int TYPE_GRASS = 1;
+	public static int TYPE_WATER = 2;
+	public static int TYPE_STONE = 3;
+	
 	// Determines which sides to draw
 	protected boolean renderTop, renderBottom, renderFront, renderBack, renderRight, renderLeft;
 	
 	// Properties
 	public static boolean isSolid = true;
 	
-	public Cube(Vector3f pos1, Vector3f pos2, Vector4f color, Texture texture) {
+	public Cube(Vector3f pos1, Vector3f pos2, Vector4f color, int type, Texture texture) {
 		this.pos1 = pos1;
 		this.pos2 = pos2;
 		this.color = color;
 		this.texture = texture;
+		this.type = type;
 		
 		// Default is to draw all sides
 		this.renderTop = true;

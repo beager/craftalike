@@ -18,9 +18,7 @@ public class TextureStore {
 	
 	public static Texture getTexture(String path) {
 		// Return the texture if it already exists in the map
-		System.out.println(path);
 		if(textureMap.containsKey(path)) {
-			System.out.println("Returning existing texture");
 			return textureMap.get(path);
 		} else {
 			try {

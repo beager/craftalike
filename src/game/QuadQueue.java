@@ -23,8 +23,7 @@ public class QuadQueue {
 	public static void renderAll() {
 		for (Iterator<String> tids = quadQueues.keySet().iterator(); tids.hasNext();) {
 			String tid = tids.next();
-			System.out.println(tid);
-			
+		
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, Integer.parseInt(tid));
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, 4);

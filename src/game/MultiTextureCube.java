@@ -6,9 +6,9 @@ public class MultiTextureCube extends Cube {
 	
 	private Texture texture2, texture3, texture4, texture5, texture6;
 
-	public MultiTextureCube(Vector3f pos1, Vector3f pos2, Vector4f color,
+	public MultiTextureCube(Vector3f pos1, Vector3f pos2, Vector4f color, int type,
 			Texture texture1, Texture texture2, Texture texture3, Texture texture4, Texture texture5, Texture texture6) {
-		super(pos1, pos2, color, texture1);
+		super(pos1, pos2, color, type, texture1);
 		this.texture2 = texture2;
 		this.texture3 = texture3;
 		this.texture4 = texture4;

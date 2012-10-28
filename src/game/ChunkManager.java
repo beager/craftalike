@@ -10,7 +10,7 @@ public class ChunkManager {
 	private HashMap<String, CubeTerrain> chunkMap = new HashMap<String, CubeTerrain>();
 	private TextureStore textureStore;
 
-	private static int chunkNum = 2;
+	private static int chunkNum = 6;
 
 	public ChunkManager() {
 	}
@@ -58,7 +58,7 @@ public class ChunkManager {
 		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum; x++) {
 			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum; z++) {
 				String hashKey = String.valueOf(x) + "," + String.valueOf(z);
-				if (!chunkMap.containsKey(hashKey))
+				if (!chunkMap.containsKey(hashKey) && (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling
 				{
 					generateChunk(x, z);
 					return;
@@ -74,18 +74,18 @@ public class ChunkManager {
 		String hashKey = String.valueOf(offsetX) + "," + String.valueOf(offsetZ);
 		
 		chunkMap.put(hashKey, new CubeTerrain(offsetX, offsetZ,
-				new Vector3(Game.CHUNK_SIZE, Game.CHUNK_SIZE, Game.CHUNK_SIZE), 
+				new Vector3(Game.CHUNK_SIZE, Game.CHUNK_HEIGHT, Game.CHUNK_SIZE), 
 				new Vector3f(1.0f, 1.0f, 1.0f),
 				new Vector3f((float) offsetX * Game.CHUNK_SIZE, 0.0f, (float) offsetZ * Game.CHUNK_SIZE)));
 		
-		final int TERRAIN_MAX_HEIGHT = 40;
+		final int TERRAIN_MAX_HEIGHT = 16;
 		final int TERRAIN_MIN_HEIGHT = 8;
-		final int TERRAIN_SMOOTH_LEVEL = 8;
+		final int TERRAIN_SMOOTH_LEVEL = 0;
 		
-		final int TERRAIN_GEN_SEED = 2333;
-		final float TERRAIN_GEN_NOISE_SIZE = 200.0f;
-		final float TERRAIN_GEN_PERSISTENCE = 0.25f;
-		final int TERRAIN_GEN_OCTAVES = 1;
+		final int TERRAIN_GEN_SEED = 1234;
+		final float TERRAIN_GEN_NOISE_SIZE = 0.01f;
+		final float TERRAIN_GEN_PERSISTENCE = 2.5f;
+		final int TERRAIN_GEN_OCTAVES = 3;
 		
 		chunkMap.get(hashKey).generateTerrain(TERRAIN_MAX_HEIGHT, TERRAIN_MIN_HEIGHT, TERRAIN_SMOOTH_LEVEL,
 								TERRAIN_GEN_SEED, TERRAIN_GEN_NOISE_SIZE, TERRAIN_GEN_PERSISTENCE,

@@ -22,6 +22,7 @@ public class Game {
 	private static final float FALSE_GRAVITY_SPEED = 0.035f;
 	
 	public static final int CHUNK_SIZE = 16;
+	public static final int CHUNK_HEIGHT = 64;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = true;
@@ -46,6 +47,7 @@ public class Game {
 	private boolean wireframe = false;
 	
 	private boolean closeRequested = false;
+	public static long deltaTime;
 	
 	public void start() {
 		// Create the display
@@ -69,7 +71,7 @@ public class Game {
 		// Create the terrain
 		terrain = new ChunkManager();
 		
-		Vector3f startPos = new Vector3f(0.0f, 25.0f, 0.0f);
+		Vector3f startPos = new Vector3f(0.0f, 38.0f, 0.0f);
 		
 		terrain.generate(startPos);
 
@@ -103,7 +105,7 @@ public class Game {
 		while(!Display.isCloseRequested()) {
 			// Calculate delta time
 			long t = System.currentTimeMillis();
-			float deltaTime = (t - lastFrame);
+			deltaTime = (t - lastFrame);
 			
 			frameTime += deltaTime;
 			if (frameTime > frameRes)
@@ -186,10 +188,10 @@ public class Game {
 		
 		if (sinPos < 0.4f) sinPos = 0.4f;
 		if (sinPos > 0.6f) sinPos = 0.6f;
-		sinPos = (sinPos - 0.4f) * 4.0f + 0.1f;
-		AMBIENCE_COLOR.x = sinPos * 0.8f;
-		AMBIENCE_COLOR.y = sinPos * 0.8f;
-		AMBIENCE_COLOR.z = sinPos * 0.8f;
+		sinPos = (sinPos - 0.4f) * 4.0f + 0.2f;
+		AMBIENCE_COLOR.x = sinPos;
+		AMBIENCE_COLOR.y = sinPos;
+		AMBIENCE_COLOR.z = sinPos;
 	}
 	
 	public void initGl() {
@@ -224,11 +226,12 @@ public class Game {
 	}
 	
 	public void render() {
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		Lighting.initLighting();
 		Lighting.initFog();
 		int width = Display.getDesktopDisplayMode().getWidth();
 		int height = Display.getDesktopDisplayMode().getHeight();
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		
 		GL11.glDepthMask(true);
 		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -237,7 +240,7 @@ public class Game {
 		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
-		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
+		GL11.glClearColor(AMBIENCE_COLOR.x - 0.1f, AMBIENCE_COLOR.y - 0.1f, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glPushMatrix();
 		render3d();
