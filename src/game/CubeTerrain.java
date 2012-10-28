@@ -1,12 +1,7 @@
 package game;
-import java.util.Random;
-
-import obstacle.SpruceObstacle;
-import obstacle.TreeObstacle;
 
 import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.opengl.Texture;
-
 
 public class CubeTerrain {
 	
@@ -22,6 +17,9 @@ public class CubeTerrain {
 	// The 3d array containing the cubes
 	public Cube[][][] terrain;
 	
+	public int x;
+	public int z;
+	
 	// Textures
 	private Texture stoneTexture;
 	private Texture grassTexture;
@@ -29,34 +27,36 @@ public class CubeTerrain {
 	private Texture dirtTexture;
 	private Texture dirtSideTexture;
 	
-	// Display list
-	private int displayList;
-	
 	private TextureStore textureStore;
 	private int[][] heightData;
 	
-	public CubeTerrain(Vector3 arraySize, Vector3f cubeSize, Vector3f translation, TextureStore textureStore) {
+	private int displayList;
+
+	public boolean released = false;
+	
+	public CubeTerrain(int x, int z, Vector3 arraySize, Vector3f cubeSize, Vector3f translation) {
+		this.x = x;
+		this.z = z;
 		this.arraySize = arraySize;
 		this.cubeSize = cubeSize;
 		this.translation = translation;
-		this.textureStore = textureStore;
 		
 		// Create the cube array
 		terrain = new Cube[arraySize.x][arraySize.y][arraySize.z];
 		
-		for(int z = 0; z < arraySize.z; z++) {
-			for(int y = 0; y < arraySize.y; y++) {
-				for(int x = 0; x < arraySize.x; x++) {
-					terrain[x][y][z] = null;
+		for(int zz = 0; zz < arraySize.z; zz++) {
+			for(int yy = 0; yy < arraySize.y; yy++) {
+				for(int xx = 0; xx < arraySize.x; xx++) {
+					terrain[xx][yy][zz] = null;
 				}
 			}
 		}
 		
-		stoneTexture = textureStore.getTexture("res/pix-stone.png");
-		grassTexture = textureStore.getTexture("res/pix-grass.png");
-		waterTexture = textureStore.getTexture("res/pix-water.png");
-		dirtTexture = textureStore.getTexture("res/pix-dirt.png");
-		dirtSideTexture = textureStore.getTexture("res/pix-grass-side.png");
+		stoneTexture = TextureStore.getTexture("res/pix-stone.png");
+		grassTexture = TextureStore.getTexture("res/pix-grass.png");
+		waterTexture = TextureStore.getTexture("res/pix-water.png");
+		dirtTexture = TextureStore.getTexture("res/pix-dirt.png");
+		dirtSideTexture = TextureStore.getTexture("res/pix-grass-side.png");
 	}
 	
 	public void generateTerrain(int maxHeight, int minHeight, int smoothLevel, int seed, float noiseSize, float persistence, int octaves, boolean textures) {
@@ -79,7 +79,7 @@ public class CubeTerrain {
 		// Randomize the heights using Perlin noise
 		for(int z = 0; z < arraySize.z; z++) {
 			for(int x = 0; x < arraySize.x; x++) {
-					heightData[x][z] = (int) (PerlinNoise2D.perlin2D(x, z, arraySize.x, arraySize.z, seed, 100.0f, 0.0001f, octaves) * (maxHeight - minHeight) + minHeight);
+					heightData[x][z] = (int) (PerlinNoise2D.perlin2D(x + (int) translation.x, z + (int) translation.z, arraySize.x, arraySize.z, seed, 100.0f, 0.0001f, octaves) * (maxHeight - minHeight) + minHeight);
 			}
 		}
 		
@@ -93,20 +93,32 @@ public class CubeTerrain {
 					if(z > 0) {
 						totalHeight += heightData[x][z - 1];
 						count++;
+					} else {
+						totalHeight += heightData[x][z];
+						count++;
 					}
 					
 					if(z < arraySize.z - 1) {
 						totalHeight += heightData[x][z + 1];
+						count++;
+					} else {
+						totalHeight += heightData[x][z];
 						count++;
 					}
 					
 					if(x > 0) {
 						totalHeight += heightData[x - 1][z];
 						count++;
+					} else {
+						totalHeight += heightData[x][z];
+						count++;
 					}
 					
 					if(x < arraySize.x - 1) {
 						totalHeight += heightData[x + 1][z];
+						count++;
+					} else {
+						totalHeight += heightData[x][z];
 						count++;
 					}
 					
@@ -125,39 +137,7 @@ public class CubeTerrain {
 				}
 			}
 		}
-		
-		Random rand = new Random();
-		
-		// Create tree obstacles
-		TreeObstacle treeGen = new TreeObstacle(this, textureStore);
-		int treeCount = 5;
-		
-		for(int treeIndex = 0; treeIndex < treeCount; treeIndex++) {
-			// Select a random position on the terrain
-			int x = rand.nextInt(arraySize.x);
-			int z = rand.nextInt(arraySize.z);
-			int y = heightData[x][z];
-			
-			// Create the tree
-			treeGen.createTree(textures);
-			treeGen.placeObstacle(new Vector3(x, y, z), false);
-		}
-		
-		// Create spruce obstacles
-		SpruceObstacle spruceGen = new SpruceObstacle(this, textureStore);
-		int spruceCount = 5;
-		
-		for(int spruceIndex = 0; spruceIndex < spruceCount; spruceIndex++) {
-			// Select a random position on the terrain
-			int x = rand.nextInt(arraySize.x);
-			int z = rand.nextInt(arraySize.z);
-			int y = heightData[x][z];
-			
-			// Create the spruce
-			spruceGen.createSpruce(textures);
-			spruceGen.placeObstacle(new Vector3(x, y, z), false);
-		}
-		
+
 		// Calculate which sides each cube needs to render
 		for(int z = 0; z < arraySize.z; z++) {
 			for(int x = 0; x < arraySize.x; x++) {
@@ -174,27 +154,26 @@ public class CubeTerrain {
 			}
 		}
 		
-		// Create the display list
 		displayList = GL11.glGenLists(1);
 		GL11.glNewList(displayList, GL11.GL_COMPILE);
 		
 		for(int z = 0; z < arraySize.z; z++) {
 			for(int x = 0; x < arraySize.x; x++) {
 				for(int y = 0; y < arraySize.y; y++) {
-					if(terrain[x][y][z] != null)
+					if(terrain[x][y][z] != null) {
 						terrain[x][y][z].render();
+					}
 				}
 			}
 		}
 		
 		QuadQueue.renderAll();
-		
 		GL11.glEndList();
 	}
 	
 	private Cube createCube(Vector3 arrayPosition, boolean textures) {
 		// Calculate the coordinates
-		Vector3f pos1 = new Vector3f(arrayPosition.x * cubeSize.x, arrayPosition.y * cubeSize.y, arrayPosition.z * cubeSize.z);
+		Vector3f pos1 = new Vector3f(arrayPosition.x * cubeSize.x + translation.x, arrayPosition.y * cubeSize.y + translation.y, arrayPosition.z * cubeSize.z + translation.z);
 		Vector3f pos2 = Vector3f.add(pos1, cubeSize);
 		
 		// Set texture depending on y
@@ -215,27 +194,13 @@ public class CubeTerrain {
 			texture = stoneTexture;
 		} else {
 			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-			texture = dirtTexture;
+			texture = grassTexture;
 		}
 		
 		if(!textures)
 			texture = null;
 		
 		return new Cube(pos1, pos2, color, texture);
-	}
-	
-	public void render() {
-		// Save the current matrix
-		GL11.glPushMatrix();
-		
-		// Add the translation matrix
-		GL11.glTranslatef(translation.x, translation.y, translation.z);
-		
-		// Call the display list
-		GL11.glCallList(displayList);
-		
-		// Restore the matrix
-		GL11.glPopMatrix();
 	}
 	
 	/* Returns true if there is a solid cube at the given coordinates. */
@@ -256,9 +221,17 @@ public class CubeTerrain {
 		return false;
 	}
 	
+	public void render() {
+		// Call the display list
+		if (!released)
+			GL11.glCallList(displayList);
+	}
+	
 	public void release() {
 		GL11.glDeleteLists(displayList, 1);
+		released = true;
 	}
+	
 }
 
 

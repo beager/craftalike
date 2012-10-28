@@ -18,9 +18,9 @@ public class Camera {
 	public Vector3f coordinates;
 	public Vector3f rotation;
 	
-	private CubeTerrain terrain;
+	private ChunkManager terrain;
 	
-	public Camera(Vector3f coordinates, Vector3f rotation, CubeTerrain terrain) {
+	public Camera(Vector3f coordinates, Vector3f rotation, ChunkManager terrain) {
 		this.coordinates = coordinates;
 		this.rotation = rotation;
 		this.terrain = terrain;
@@ -29,8 +29,8 @@ public class Camera {
 	public void move(float delta, int direction, float gravityDelta, boolean collisionChecking, boolean flyMode) {
 		Vector3f newCoordinates = new Vector3f(coordinates.x, coordinates.y, coordinates.z);
 		
-		if (newCoordinates.y < -80.0f)
-			newCoordinates.y = 0.0f;
+		if (newCoordinates.y < -0.0f)
+			newCoordinates.y = 80.0f;
 		
 		if(direction == FORWARD) {
 			if(flyMode) {

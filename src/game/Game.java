@@ -1,5 +1,8 @@
 package game;
 
+import java.awt.Font;
+import java.io.InputStream;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -8,14 +11,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
 import org.newdawn.slick.Color;
-import org.newdawn.slick.SlickException;
-import org.newdawn.slick.UnicodeFont;
-import org.newdawn.slick.font.effects.ColorEffect;
-import org.newdawn.slick.opengl.Texture;
-
-import profiling.Profiling;
-import profiling.ProfilingPart;
-
+import org.newdawn.slick.TrueTypeFont;
+import org.newdawn.slick.util.ResourceLoader;
 
 public class Game {
 	
@@ -24,13 +21,13 @@ public class Game {
 	private static final float MOVEMENT_SPEED_FLYMODE = 0.17f;
 	private static final float FALSE_GRAVITY_SPEED = 0.035f;
 	
-	private static final int CHUNK_SIZE = 16;
+	public static final int CHUNK_SIZE = 16;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = true;
-	private static final boolean TEXTURES = true;
+	public static final boolean TEXTURES = true;
 	
-	private UnicodeFont font;
+	private TrueTypeFont font;
 	
 	public static Vector4f AMBIENCE_COLOR = new Vector4f(0.05f, 0.05f, 0.05f, 1.0f);
 	
@@ -40,9 +37,7 @@ public class Game {
 	
 	// Game components
 	private Camera camera;
-	private CubeTerrain terrain;
-	private Skybox skybox;
-	private TextureStore textureStore;
+	private ChunkManager terrain;
 	
 	// Toggles
 	private boolean flyMode = false;
@@ -52,12 +47,6 @@ public class Game {
 	
 	private boolean closeRequested = false;
 	
-	// Profiling
-	private Profiling profiling = new Profiling();
-	private ProfilingPart displayUpdate = new ProfilingPart("DISPLAY UPDATE");
-	private ProfilingPart inputHandling = new ProfilingPart("INPUT HANDLING");
-	
-	@SuppressWarnings("unchecked")
 	public void start() {
 		// Create the display
 		try {
@@ -77,45 +66,27 @@ public class Game {
 		// Hide the mouse
 		Mouse.setGrabbed(true);
 		
-		textureStore = new TextureStore();
-		
-		Texture skyboxTexture = textureStore.getTexture("res/clouds.png");
-		
 		// Create the terrain
-		terrain = new CubeTerrain(new Vector3(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE), new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f(-25.0f, -40.0f, -25.0f), textureStore);
+		terrain = new ChunkManager();
 		
-		final int TERRAIN_MAX_HEIGHT = 40;
-		final int TERRAIN_MIN_HEIGHT = 8;
-		final int TERRAIN_SMOOTH_LEVEL = 10;
+		Vector3f startPos = new Vector3f(0.0f, 25.0f, 0.0f);
 		
-		final int TERRAIN_GEN_SEED = 1024;
-		final float TERRAIN_GEN_NOISE_SIZE = 2.0f;
-		final float TERRAIN_GEN_PERSISTENCE = 0.25f;
-		final int TERRAIN_GEN_OCTAVES = 4;
-		
-		terrain.generateTerrain(TERRAIN_MAX_HEIGHT, TERRAIN_MIN_HEIGHT, TERRAIN_SMOOTH_LEVEL,
-								TERRAIN_GEN_SEED, TERRAIN_GEN_NOISE_SIZE, TERRAIN_GEN_PERSISTENCE, TERRAIN_GEN_OCTAVES, TEXTURES);
-		
+		terrain.generate(startPos);
+
 		// Create the camera
-		camera = new Camera(new Vector3f(-20.0f, -5.0f, -20.0f), new Vector3f(0.0f, 0.0f, 0.0f), terrain);
-		
-		// Create the skybox
-		skybox = new Skybox(new Vector3f(-50.0f, -50.0f, -50.0f), new Vector3f(50.0f, 50.0f, 50.0f), null, skyboxTexture);
-		
-		//fonts
+		camera = new Camera(startPos, new Vector3f(0.0f, 0.0f, 0.0f), terrain);
+
+		// load font from a .ttf file
 		try {
-			font = new UnicodeFont("res/fonts/Minecraftia.ttf", 1, false, false);
-		} catch (SlickException e1) {
-			e1.printStackTrace();
-		}
-		font.addAsciiGlyphs();
-		font.addGlyphs(400,400);
-		font.getEffects().add(new ColorEffect(java.awt.Color.WHITE));
-		try {
-			font.loadGlyphs();
-		} catch (SlickException e) {
+			InputStream inputStream	= ResourceLoader.getResourceAsStream("res/fonts/Minecraftia.ttf");
+			
+			Font awtFont = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+			awtFont = awtFont.deriveFont(24f); // set font size
+			font = new TrueTypeFont(awtFont, false);
+				
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}	
 		
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -160,8 +131,6 @@ public class Game {
 		camera.hasGravitiedThisFrame = false;
 		float movementSpeed = flyMode ? MOVEMENT_SPEED_FLYMODE : MOVEMENT_SPEED;
 		
-		profiling.partBegin(inputHandling);
-		
 			// Handle mouse movement
 				camera.addRotation(new Vector3f(Mouse.getDY() * MOUSE_SPEED_SCALE, -Mouse.getDX() * MOUSE_SPEED_SCALE, 0.0f));
 				
@@ -202,13 +171,14 @@ public class Game {
 					}
 				}
 			}
-		profiling.partEnd(inputHandling);
 			
 		// Apply gravity
 		if(!flyMode) {
 			camera.move(0, Camera.FORWARD, camera.gravitySpeed, doCollisionChecking, flyMode);
 			camera.updateGravity();
 		}
+		
+		terrain.updateVisibleChunks(camera.coordinates.x, camera.coordinates.z);
 		
 		long timeElapsed = System.currentTimeMillis() - startTime;
 		float sinPos = (float) Math.sin((timeElapsed / 80000.0f) % (2.0f * Math.PI) );
@@ -218,8 +188,8 @@ public class Game {
 		if (sinPos > 0.6f) sinPos = 0.6f;
 		sinPos = (sinPos - 0.4f) * 4.0f + 0.1f;
 		AMBIENCE_COLOR.x = sinPos * 0.8f;
-		AMBIENCE_COLOR.y = sinPos * 0.6f;
-		AMBIENCE_COLOR.z = sinPos * 0.6f;
+		AMBIENCE_COLOR.y = sinPos * 0.8f;
+		AMBIENCE_COLOR.z = sinPos * 0.8f;
 	}
 	
 	public void initGl() {
@@ -229,7 +199,7 @@ public class Game {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
 		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 	}
@@ -248,7 +218,9 @@ public class Game {
 	}
 	
 	public void render2d() {
-		font.drawString(10, 10, "GetDunkedOn", Color.green);
+		
+		Color.white.bind();
+		font.drawString(10, 100, "NICE LOOKING FONTS!", Color.green);
 	}
 	
 	public void render() {
@@ -265,7 +237,7 @@ public class Game {
 		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
-		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z + 0.2f, AMBIENCE_COLOR.a);
+		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glPushMatrix();
 		render3d();
@@ -293,10 +265,9 @@ public class Game {
         GL11.glEnd();
         
 	    render2d();
+	    
 	    GL11.glPopMatrix();
 	    GL11.glEnable(GL11.GL_LIGHTING);
-		profiling.partBegin(displayUpdate);
 		Display.update();
-		profiling.partEnd(displayUpdate);
 	}
 }

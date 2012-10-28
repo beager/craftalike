@@ -14,15 +14,13 @@ import org.newdawn.slick.util.ResourceLoader;
 
 public class TextureStore {
 
-	private Map<String, Texture> textureMap;
+	private static HashMap<String, Texture> textureMap = new HashMap<String, Texture>();
 	
-	public TextureStore() {
-		textureMap = new HashMap<String, Texture>();
-	}
-	
-	public Texture getTexture(String path) {
+	public static Texture getTexture(String path) {
 		// Return the texture if it already exists in the map
+		System.out.println(path);
 		if(textureMap.containsKey(path)) {
+			System.out.println("Returning existing texture");
 			return textureMap.get(path);
 		} else {
 			try {

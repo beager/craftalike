@@ -44,102 +44,60 @@ public class Cube {
 	}
 	
 	/* Renders the cube. */
-	public void render() {		
-		// Top
+	public void render() {
 		if(renderTop) {
 			Vector3f[] vertices = new Vector3f[4];
-			
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos2.y, pos2.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 		
-		// Bottom
 		if(renderBottom) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos1.y, pos2.z);
-			
 			vertices[1] = new Vector3f(pos1.x, pos1.y, pos2.z);
-			
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos1.z);
-			
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 		
-		// Front
 		if(renderFront) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos2.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos2.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 		
-		// Back
 		if(renderBack) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos2.x, pos1.y, pos1.z);
-
 			vertices[3] = new Vector3f(pos1.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
-		
-		// Right
+
 		if(renderRight) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos2.x, pos2.y, pos1.z);
-
 			vertices[1] = new Vector3f(pos2.x, pos2.y, pos2.z);
-
 			vertices[2] = new Vector3f(pos2.x, pos1.y, pos2.z);
-
 			vertices[3] = new Vector3f(pos2.x, pos1.y, pos1.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 		
-		// Left
 		if(renderLeft) {
 			Vector3f[] vertices = new Vector3f[4];
-
 			vertices[0] = new Vector3f(pos1.x, pos2.y, pos2.z);
-
 			vertices[1] = new Vector3f(pos1.x, pos2.y, pos1.z);
-
 			vertices[2] = new Vector3f(pos1.x, pos1.y, pos1.z);
-
 			vertices[3] = new Vector3f(pos1.x, pos1.y, pos2.z);
-			
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
-		
-		// Reset color if color was used
-		//GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-		//GL11.glDisable(GL11.GL_TEXTURE_2D);
-		//GL11.glDisable(GL11.GL_COLOR_MATERIAL);
 	}
 }
 

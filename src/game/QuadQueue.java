@@ -11,7 +11,6 @@ public class QuadQueue {
 	private static HashMap<String, ArrayList<Vector3f[]>> quadQueues = new HashMap<String, ArrayList<Vector3f[]>>();
 
 	public QuadQueue() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static void add(int textureId, Vector3f[] v) {
@@ -23,11 +22,10 @@ public class QuadQueue {
 	
 	public static void renderAll() {
 		for (Iterator<String> tids = quadQueues.keySet().iterator(); tids.hasNext();) {
-			//TODO: Render quads here!
-			
 			String tid = tids.next();
+			System.out.println(tid);
+			
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			System.out.println(Integer.parseInt(tid));
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, Integer.parseInt(tid));
 			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, 4);
 			
