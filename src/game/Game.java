@@ -71,7 +71,7 @@ public class Game {
 		// Create the terrain
 		terrain = new ChunkManager();
 		
-		Vector3f startPos = new Vector3f(0.0f, 38.0f, 0.0f);
+		Vector3f startPos = new Vector3f(20000.0f, 80.0f, 20000.0f);
 		
 		terrain.generate(startPos);
 
@@ -189,19 +189,19 @@ public class Game {
 		if (sinPos < 0.4f) sinPos = 0.4f;
 		if (sinPos > 0.6f) sinPos = 0.6f;
 		sinPos = (sinPos - 0.4f) * 4.0f + 0.2f;
-		AMBIENCE_COLOR.x = sinPos;
-		AMBIENCE_COLOR.y = sinPos;
-		AMBIENCE_COLOR.z = sinPos;
+		AMBIENCE_COLOR.x = sinPos - 0.4f;
+		AMBIENCE_COLOR.y = sinPos - 0.4f;
+		AMBIENCE_COLOR.z = sinPos - 0.2f;
 	}
 	
 	public void initGl() {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_CULL_FACE);
+		//GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		//GL11.glEnable(GL11.GL_BLEND);
+		//GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 	}
@@ -222,17 +222,17 @@ public class Game {
 	public void render2d() {
 		
 		Color.white.bind();
-		font.drawString(10, 100, "NICE LOOKING FONTS!", Color.green);
+		font.drawString(10, 100, "NICE LOOKING FONTS!", Color.black);
 	}
 	
 	public void render() {
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		
 		Lighting.initLighting();
 		Lighting.initFog();
 		int width = Display.getDesktopDisplayMode().getWidth();
 		int height = Display.getDesktopDisplayMode().getHeight();
 		
-		GL11.glDepthMask(true);
+		//GL11.glDepthMask(true);
 		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		
@@ -240,7 +240,7 @@ public class Game {
 		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
-		GL11.glClearColor(AMBIENCE_COLOR.x - 0.1f, AMBIENCE_COLOR.y - 0.1f, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
+		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glPushMatrix();
 		render3d();
@@ -253,24 +253,27 @@ public class Game {
 		
         GL11.glDisable( GL11.GL_DEPTH_TEST );
         GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDepthMask(false);
+        GL11.glDisable(GL11.GL_CULL_FACE);
+        //GL11.glDepthMask(false);
         GL11.glPushMatrix();
 
         // set the color of the quad (R,G,B,A)
         GL11.glColor4f(0.5f,0.5f,1.0f,0.5f);
          
         // draw quad
-        GL11.glBegin(GL11.GL_QUADS);
+        /*GL11.glBegin(GL11.GL_QUADS);
             GL11.glVertex2f(100,100);
             GL11.glVertex2f(100+200,100);
             GL11.glVertex2f(100+200,100+200);
             GL11.glVertex2f(100,100+200);
-        GL11.glEnd();
+        GL11.glEnd();*/
         
-	    render2d();
+	    //render2d();
 	    
 	    GL11.glPopMatrix();
+	    GL11.glEnable(GL11.GL_CULL_FACE);
 	    GL11.glEnable(GL11.GL_LIGHTING);
+	    GL11.glEnable(GL11.GL_DEPTH_TEST);
 		Display.update();
 	}
 }

@@ -15,9 +15,9 @@ public class Lighting {
 		
 		/* Set up the light */
 	    // Ambient Light
-	    lightAmbient.put(0, Game.AMBIENCE_COLOR.x);
-	    lightAmbient.put(1, Game.AMBIENCE_COLOR.y);
-	    lightAmbient.put(2, Game.AMBIENCE_COLOR.z);
+	    lightAmbient.put(0, Game.AMBIENCE_COLOR.x + 0.5f);
+	    lightAmbient.put(1, Game.AMBIENCE_COLOR.y + 0.5f);
+	    lightAmbient.put(2, Game.AMBIENCE_COLOR.z + 0.5f);
 	    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
 	    
 	    // Diffuse Light
@@ -50,10 +50,10 @@ public class Lighting {
 		fogColor.put(Game.AMBIENCE_COLOR.x).put(Game.AMBIENCE_COLOR.y).put(Game.AMBIENCE_COLOR.z).put(Game.AMBIENCE_COLOR.a).flip();
 		GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP2);
 		GL11.glFog(GL11.GL_FOG_COLOR, fogColor);
-		GL11.glFogf(GL11.GL_FOG_DENSITY, 0.005f); // was 0.08
+		GL11.glFogf(GL11.GL_FOG_DENSITY, 0.01f); // was 0.08
 		GL11.glHint(GL11.GL_FOG_HINT, GL11.GL_DONT_CARE);
-		//GL11.glFogf(GL11.GL_FOG_START, 10000.0f);
-		//GL11.glFogf(GL11.GL_FOG_END, 50000.0f);
+		//GL11.glFogf(GL11.GL_FOG_START, 100.0f);
+		//GL11.glFogf(GL11.GL_FOG_END, 500.0f);
 	}
 
 }

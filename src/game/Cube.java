@@ -18,6 +18,7 @@ public class Cube {
 	public static int TYPE_GRASS = 1;
 	public static int TYPE_WATER = 2;
 	public static int TYPE_STONE = 3;
+	public static int TYPE_SAND = 4;
 	
 	// Determines which sides to draw
 	protected boolean renderTop, renderBottom, renderFront, renderBack, renderRight, renderLeft;

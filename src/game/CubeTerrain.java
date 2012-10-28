@@ -28,8 +28,8 @@ public class CubeTerrain {
 	private Texture waterTexture;
 	private Texture dirtTexture;
 	private Texture dirtSideTexture;
+	private Texture sandTexture;
 	
-	private TextureStore textureStore;
 	private int[][] heightData;
 	
 	private int displayList;
@@ -59,6 +59,7 @@ public class CubeTerrain {
 		waterTexture = TextureStore.getTexture("res/pix-water.png");
 		dirtTexture = TextureStore.getTexture("res/pix-dirt.png");
 		dirtSideTexture = TextureStore.getTexture("res/pix-grass-side.png");
+		sandTexture = TextureStore.getTexture("res/pix-sand.png");
 	}
 	
 	public void generateTerrain(int maxHeight, int minHeight, int smoothLevel, int seed, float noiseSize, float persistence, int octaves, boolean textures) {
@@ -163,12 +164,11 @@ public class CubeTerrain {
 						}
 					} else {
 						
-						if ((terrain[x][y + 1][z] != null) && (terrain[x][y+1][z].type == Cube.TYPE_WATER))
-						{
-							renderTop = true;
-						}
+						
 						
 						if (y == arraySize.y - 1) {
+							renderTop = true;
+						} else if ((terrain[x][y + 1][z] != null) && (terrain[x][y+1][z].type == Cube.TYPE_WATER)) {
 							renderTop = true;
 						} else if (terrain[x][y+1][z] != null) {
 							renderTop = (terrain[x][y + 1][z].type == Cube.TYPE_WATER);
@@ -242,10 +242,18 @@ public class CubeTerrain {
 		int type = 0;
 		
 		if (arrayPosition.y < 7) {
-			// Stone
-			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-			texture = stoneTexture;
-			type = Cube.TYPE_STONE;
+			if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
+				// Sand
+				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+				texture = sandTexture;
+				type = Cube.TYPE_SAND;
+			} else {
+				// Stone
+				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+				texture = stoneTexture;
+				type = Cube.TYPE_STONE;	
+					
+			}
 		} else {
 			if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
@@ -267,7 +275,7 @@ public class CubeTerrain {
 	}
 	
 	private Cube createWaterCube(Vector3 arrayPosition, boolean textures) {
-		Vector3f pos1 = new Vector3f(arrayPosition.x * cubeSize.x + translation.x, arrayPosition.y * cubeSize.y + translation.y, arrayPosition.z * cubeSize.z + translation.z);
+		Vector3f pos1 = new Vector3f(arrayPosition.x * cubeSize.x + translation.x, arrayPosition.y * cubeSize.y * 31 / 32 + translation.y, arrayPosition.z * cubeSize.z + translation.z);
 		Vector3f pos2 = Vector3f.add(pos1, cubeSize);
 		
 		return new Cube(pos1, pos2, new Vector4f(0.3f, 0.3f, 0.3f, 1.0f), Cube.TYPE_WATER, waterTexture);
