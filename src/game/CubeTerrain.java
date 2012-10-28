@@ -291,7 +291,8 @@ public class CubeTerrain {
 			arrayCoordinates.y >= 0 && arrayCoordinates.y < arraySize.y &&
 			arrayCoordinates.z >= 0 && arrayCoordinates.z < arraySize.z) {
 			// Is there a cube at this coordinate?
-			if(terrain[arrayCoordinates.x][arrayCoordinates.y][arrayCoordinates.z] != null) {
+			if((terrain[arrayCoordinates.x][arrayCoordinates.y][arrayCoordinates.z] != null)
+					&& (terrain[arrayCoordinates.x][arrayCoordinates.y][arrayCoordinates.z].type != Cube.TYPE_WATER)) {
 				return true;
 			}
 		}

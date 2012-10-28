@@ -7,6 +7,8 @@ import org.lwjgl.opengl.GL11;
 
 public class Lighting {
 	
+	public static boolean isUnderwater = false;
+	
 	public static void initLighting() {
 		FloatBuffer lightAmbient = BufferUtils.createFloatBuffer(4);
 		FloatBuffer lightDiffuse = BufferUtils.createFloatBuffer(4);
@@ -45,15 +47,29 @@ public class Lighting {
 	}
 
 	public static void initFog() {
-		GL11.glEnable(GL11.GL_FOG);
-		FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
-		fogColor.put(Game.AMBIENCE_COLOR.x).put(Game.AMBIENCE_COLOR.y).put(Game.AMBIENCE_COLOR.z).put(Game.AMBIENCE_COLOR.a).flip();
-		GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP2);
-		GL11.glFog(GL11.GL_FOG_COLOR, fogColor);
-		GL11.glFogf(GL11.GL_FOG_DENSITY, 0.01f); // was 0.08
-		GL11.glHint(GL11.GL_FOG_HINT, GL11.GL_DONT_CARE);
-		//GL11.glFogf(GL11.GL_FOG_START, 100.0f);
-		//GL11.glFogf(GL11.GL_FOG_END, 500.0f);
+		if (isUnderwater) {
+			GL11.glEnable(GL11.GL_FOG);
+			FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
+			fogColor.put(Game.AMBIENCE_COLOR.x - 0.7f).put(Game.AMBIENCE_COLOR.y - 0.7f).put(Game.AMBIENCE_COLOR.z - 0.6f).put(Game.AMBIENCE_COLOR.a).flip();
+			GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP2);
+			GL11.glFog(GL11.GL_FOG_COLOR, fogColor);
+			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.4f); // was 0.08
+			GL11.glHint(GL11.GL_FOG_HINT, GL11.GL_DONT_CARE);
+		} else {
+			GL11.glEnable(GL11.GL_FOG);
+			FloatBuffer fogColor = BufferUtils.createFloatBuffer(4);
+			fogColor.put(Game.AMBIENCE_COLOR.x).put(Game.AMBIENCE_COLOR.y).put(Game.AMBIENCE_COLOR.z).put(Game.AMBIENCE_COLOR.a).flip();
+			GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP2);
+			GL11.glFog(GL11.GL_FOG_COLOR, fogColor);
+			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.01f); // was 0.08
+			GL11.glHint(GL11.GL_FOG_HINT, GL11.GL_DONT_CARE);
+			//GL11.glFogf(GL11.GL_FOG_START, 100.0f);
+			//GL11.glFogf(GL11.GL_FOG_END, 500.0f);
+		}
+	}
+
+	public static void setIsUnderwater(boolean b) {
+		isUnderwater = b;
 	}
 
 }

@@ -131,7 +131,9 @@ public class Game {
 	
 	public void update() {
 		camera.hasGravitiedThisFrame = false;
+		Lighting.setIsUnderwater(camera.coordinates.y < 7.0f);
 		float movementSpeed = flyMode ? MOVEMENT_SPEED_FLYMODE : MOVEMENT_SPEED;
+		if (Lighting.isUnderwater) movementSpeed *= 0.3;
 		
 			// Handle mouse movement
 				camera.addRotation(new Vector3f(Mouse.getDY() * MOUSE_SPEED_SCALE, -Mouse.getDX() * MOUSE_SPEED_SCALE, 0.0f));
@@ -227,7 +229,9 @@ public class Game {
 	
 	public void render() {
 		
+		
 		Lighting.initLighting();
+		
 		Lighting.initFog();
 		int width = Display.getDesktopDisplayMode().getWidth();
 		int height = Display.getDesktopDisplayMode().getHeight();
