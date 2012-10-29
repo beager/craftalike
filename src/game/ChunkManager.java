@@ -11,7 +11,7 @@ public class ChunkManager {
 	private HashMap<String, CubeTerrain> chunkMap = new HashMap<String, CubeTerrain>();
 	private int seed;
 
-	private static int chunkNum = 5;
+	private static int chunkNum = 4;
 
 	public ChunkManager() {
 		

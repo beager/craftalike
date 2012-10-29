@@ -1,9 +1,15 @@
 package game;
 
 import java.awt.Font;
+import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.lwjgl.LWJGLException;
+import org.lwjgl.LWJGLUtil;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -21,6 +27,7 @@ public class Game {
 	private static final float MOVEMENT_SPEED = 0.085f;
 	private static final float MOVEMENT_SPEED_FLYMODE = 0.17f;
 	private static final float FALSE_GRAVITY_SPEED = 0.035f;
+	private static final float FOV = 90.0f;
 	
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 64;
@@ -31,14 +38,12 @@ public class Game {
 	public int ups;
 	
 	private static final boolean FULLSCREEN = false;
-	private static final boolean VSYNC = true;
+	private static final boolean VSYNC = false;
 	public static final boolean TEXTURES = true;
 	
 	private TrueTypeFont font;
 	
 	public static Vector4f AMBIENCE_COLOR = new Vector4f(0.05f, 0.05f, 0.05f, 1.0f);
-	
-	private long lastFrame;
 	
 	private long startTime;
 	
@@ -54,6 +59,8 @@ public class Game {
 	private boolean isPaused = false;
 	
 	private boolean closeRequested = false;
+	private int displayFps;
+	private int displayUps;
 	public static long deltaTime;
 	
 	public void start() {
@@ -85,8 +92,6 @@ public class Game {
 		// Create the camera
 		camera = new Camera(startPos, new Vector3f(0.0f, 0.0f, 0.0f), terrain);
 
-			
-		
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		
@@ -100,42 +105,41 @@ public class Game {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-			
-		// Main loop
-		lastFrame = System.currentTimeMillis();
-		
+
 		startTime = System.currentTimeMillis();
-		
-		float frameTime = 0.0f;
-		
-		float frameRes = 1000.0f / 200.0f;
-		
+
+		long lastTime = System.nanoTime();
+		long timer = System.currentTimeMillis();
+		final double ns = 1000000000.0 / 60.0;
+		double delta = 0;
 		fps = 0;
 		ups = 0;
+		displayUps = 0;
+		displayFps = 0;
 		
 		while(!Display.isCloseRequested()) {
-			// Calculate delta time
-			long t = System.currentTimeMillis();
-			deltaTime = (t - lastFrame);
-			
-			
-			frameTime += deltaTime;
-			if (frameTime > frameRes)
-			{
+			long now = System.nanoTime();
+			delta += (now - lastTime) / ns;
+			lastTime = now;
+			while (delta >= 1) {
 				if (!isPaused) {
 					update();
-					if ((int) deltaTime > 0)
-						ups = (ups * 20 + (1000 / (int) deltaTime)) / 21;
+					ups++;
 				}
-				frameTime %= frameRes;
+				delta--;
+			}
+			render();
+			fps++;
+			
+			if (System.currentTimeMillis() - timer > 1000) {
+				timer += 1000;
+				displayFps = fps;
+				displayUps = ups;
+				//frame.setTitle(Game.title + " | " + updates + " ups, " + frames + " fps");
+				ups = 0;
+				fps = 0;	
 			}
 			
-			if ((int) deltaTime > 0)
-				fps = (fps * 20 + (1000 / (int) deltaTime)) / 21;
-			
-			if (deltaTime < (1000.0f / 30.0f)) render();
-			
-			lastFrame = t;
 			
 			// Check for pressed keys
 			while (Keyboard.next()) {
@@ -163,7 +167,33 @@ public class Game {
 		Display.destroy();
 	}
 
+
 	public static void main(String[] args) {
+	        switch (LWJGLUtil.getPlatform()) {
+	            case LWJGLUtil.PLATFORM_MACOSX:
+	                addLibraryPath(new File("libs/lwjgl-2.8.4/native/macosx"));
+	                break;
+	            case LWJGLUtil.PLATFORM_LINUX:
+	                addLibraryPath(new File("libs/lwjgl-2.8.4/native/linux"));
+	                if (System.getProperty("os.arch").contains("64")) {
+	                    System.loadLibrary("openal64");
+	                } else {
+	                    System.loadLibrary("openal");
+	                }
+	                break;
+	            case LWJGLUtil.PLATFORM_WINDOWS:
+	                addLibraryPath(new File("libs/lwjgl-2.8.4/native/windows"));
+
+	                if (System.getProperty("os.arch").contains("64")) {
+	                    System.loadLibrary("OpenAL64");
+	                } else {
+	                    System.loadLibrary("OpenAL32");
+	                }
+	                break;
+	            default:
+	                System.out.println("Unsupported operating system: {}");
+	                System.exit(1);
+	        }
 		Game cubeGame = new Game();
 		cubeGame.start();
 	}
@@ -283,7 +313,7 @@ public class Game {
 		renderTextLine(0, "x: " + camera.coordinates.x );
 		renderTextLine(1, "y: " + camera.coordinates.y );
 		renderTextLine(2, "z: " + camera.coordinates.z );
-		renderTextLine(3, fps + " fps, " + ups + " ups");
+		renderTextLine(3, displayFps + " fps, " + displayUps + " ups");
 		
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -301,7 +331,17 @@ public class Game {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		
 		GL11.glLoadIdentity();
-		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
+		
+		float ratio = ((float)Display.getDisplayMode().getWidth())/((float)Display.getDisplayMode().getHeight());
+		float fov = FOV;
+		float near = 0.1f;
+		float far = 80;
+		float top = (float) (near*Math.tan(Math.PI/180*fov/2));
+		float bottom = -top;
+		float right = ratio*top;
+		float left = -right;
+		GL11.glFrustum(left, right, bottom, top, near, far);
+		
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
 		if (!Lighting.isUnderwater) {
@@ -332,4 +372,31 @@ public class Game {
 	    GL11.glEnable(GL11.GL_DEPTH_TEST);
 		Display.update();
 	}
+	
+    private static void addLibraryPath(File libPath) {
+        try {
+            String envPath = System.getProperty("java.library.path");
+            if (envPath == null || envPath.isEmpty()) {
+                System.setProperty("java.library.path", libPath.getAbsolutePath());
+            } else {
+                System.setProperty("java.library.path", envPath + File.pathSeparator + libPath.getAbsolutePath());
+            }
+
+            final Field usrPathsField = ClassLoader.class.getDeclaredField("usr_paths");
+            usrPathsField.setAccessible(true);
+
+            List<String> paths = new ArrayList<String>(Arrays.asList((String[]) usrPathsField.get(null)));
+
+            if (paths.contains(libPath.getAbsolutePath())) {
+                return;
+            }
+            System.out.println("Adding path" + libPath.getAbsolutePath());
+            paths.add(0, libPath.getAbsolutePath()); // Add to beginning, to override system libraries
+
+            usrPathsField.set(null, paths.toArray(new String[paths.size()]));
+        } catch (Exception e) {
+            System.out.println("Couldn't link static libraries.");
+            System.exit(1);
+        }
+    }
 }
