@@ -14,7 +14,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.TrueTypeFont;

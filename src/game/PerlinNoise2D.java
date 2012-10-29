@@ -23,6 +23,9 @@ public class PerlinNoise2D {
 	
 	public static float perlin2D(int x, int y, int width, int height, int seed, float noiseSize, float persistence, int octaves) {
 		float total = 0.0f;
+		
+		x = x + 2000000;
+		y = y + 2000000;
 
 		for(int i = 1; i <= octaves; i++) {
 			// Calculate frequency and amplitude
