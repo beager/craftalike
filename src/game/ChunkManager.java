@@ -9,7 +9,6 @@ import org.lwjgl.opengl.GL11;
 
 public class ChunkManager {
 	private HashMap<String, CubeTerrain> chunkMap = new HashMap<String, CubeTerrain>();
-	private TextureStore textureStore;
 	private int seed;
 
 	private static int chunkNum = 5;
@@ -66,7 +65,7 @@ public class ChunkManager {
 			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum; z++) {
 				String hashKey = String.valueOf(x) + "," + String.valueOf(z);
 				if (!chunkMap.containsKey(hashKey)
-						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling
+						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO
 				{
 					generateChunk(x, z);
 					return;
@@ -77,7 +76,6 @@ public class ChunkManager {
 
 	public void generateChunk(int offsetX, int offsetZ) {
 		// Create the terrain
-		textureStore = new TextureStore();
 
 		String hashKey = String.valueOf(offsetX) + ","
 				+ String.valueOf(offsetZ);
@@ -88,14 +86,14 @@ public class ChunkManager {
 						* Game.CHUNK_SIZE, 0.0f, (float) offsetZ
 						* Game.CHUNK_SIZE)));
 
-		final int TERRAIN_MAX_HEIGHT = 16;
-		final int TERRAIN_MIN_HEIGHT = 8;
+		final int TERRAIN_MAX_HEIGHT = 20;
+		final int TERRAIN_MIN_HEIGHT = 7;
 		final int TERRAIN_SMOOTH_LEVEL = 0;
 
 		final int TERRAIN_GEN_SEED = seed;
-		final float TERRAIN_GEN_NOISE_SIZE = 0.02f;
-		final float TERRAIN_GEN_PERSISTENCE = 1.3f;
-		final int TERRAIN_GEN_OCTAVES = 4;
+		final float TERRAIN_GEN_NOISE_SIZE = 0.06f;
+		final float TERRAIN_GEN_PERSISTENCE = 0.9f;
+		final int TERRAIN_GEN_OCTAVES = 3;
 
 		chunkMap.get(hashKey).generateTerrain(TERRAIN_MAX_HEIGHT,
 				TERRAIN_MIN_HEIGHT, TERRAIN_SMOOTH_LEVEL, TERRAIN_GEN_SEED,

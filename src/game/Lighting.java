@@ -17,11 +17,17 @@ public class Lighting {
 		
 		/* Set up the light */
 	    // Ambient Light
-	    lightAmbient.put(0, Game.AMBIENCE_COLOR.x + 0.5f);
-	    lightAmbient.put(1, Game.AMBIENCE_COLOR.y + 0.5f);
-	    lightAmbient.put(2, Game.AMBIENCE_COLOR.z + 0.5f);
-	    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
-	    
+		if (isUnderwater) {
+			lightAmbient.put(0, Game.AMBIENCE_COLOR.x - 0.7f);
+		    lightAmbient.put(1, Game.AMBIENCE_COLOR.y - 0.7f);
+		    lightAmbient.put(2, Game.AMBIENCE_COLOR.z - 0.6f);
+		    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
+		} else {
+		    lightAmbient.put(0, Game.AMBIENCE_COLOR.x + 0.5f);
+		    lightAmbient.put(1, Game.AMBIENCE_COLOR.y + 0.5f);
+		    lightAmbient.put(2, Game.AMBIENCE_COLOR.z + 0.5f);
+		    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
+		}
 	    // Diffuse Light
 	    lightDiffuse.put(0, 1.0f);
 	    lightDiffuse.put(1, 1.0f);

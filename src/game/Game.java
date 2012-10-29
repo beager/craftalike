@@ -12,6 +12,7 @@ import org.lwjgl.util.glu.GLU;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.TrueTypeFont;
+import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.util.ResourceLoader;
 
 public class Game {
@@ -23,6 +24,11 @@ public class Game {
 	
 	public static final int CHUNK_SIZE = 16;
 	public static final int CHUNK_HEIGHT = 64;
+	
+	public static final int TEXT_LINE_HEIGHT = 18;
+	
+	public int fps;
+	public int ups;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = true;
@@ -45,6 +51,7 @@ public class Game {
 	private boolean doCollisionChecking = true;
 	private boolean renderSkybox = false;
 	private boolean wireframe = false;
+	private boolean isPaused = false;
 	
 	private boolean closeRequested = false;
 	public static long deltaTime;
@@ -71,27 +78,28 @@ public class Game {
 		// Create the terrain
 		terrain = new ChunkManager();
 		
-		Vector3f startPos = new Vector3f(20000.0f, 80.0f, 20000.0f);
+		Vector3f startPos = new Vector3f(0.0f, 80.0f, 0.0f);
 		
 		terrain.generate(startPos);
 
 		// Create the camera
 		camera = new Camera(startPos, new Vector3f(0.0f, 0.0f, 0.0f), terrain);
 
+			
+		
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		
 		// load font from a .ttf file
 		try {
 			InputStream inputStream	= ResourceLoader.getResourceAsStream("res/fonts/Minecraftia.ttf");
 			
 			Font awtFont = Font.createFont(Font.TRUETYPE_FONT, inputStream);
-			awtFont = awtFont.deriveFont(24f); // set font size
+			awtFont = awtFont.deriveFont(16f); // set font size
 			font = new TrueTypeFont(awtFont, false);
-				
 		} catch (Exception e) {
 			e.printStackTrace();
-		}	
-		
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		}
 			
 		// Main loop
 		lastFrame = System.currentTimeMillis();
@@ -100,21 +108,52 @@ public class Game {
 		
 		float frameTime = 0.0f;
 		
-		float frameRes = 1000.0f / 60.0f;
+		float frameRes = 1000.0f / 200.0f;
+		
+		fps = 0;
+		ups = 0;
 		
 		while(!Display.isCloseRequested()) {
 			// Calculate delta time
 			long t = System.currentTimeMillis();
 			deltaTime = (t - lastFrame);
 			
+			
 			frameTime += deltaTime;
 			if (frameTime > frameRes)
 			{
-				update();
+				if (!isPaused) {
+					update();
+					if ((int) deltaTime > 0)
+						ups = (ups * 20 + (1000 / (int) deltaTime)) / 21;
+				}
 				frameTime %= frameRes;
 			}
+			
+			if ((int) deltaTime > 0)
+				fps = (fps * 20 + (1000 / (int) deltaTime)) / 21;
+			
 			if (deltaTime < (1000.0f / 30.0f)) render();
+			
 			lastFrame = t;
+			
+			// Check for pressed keys
+			while (Keyboard.next()) {
+				if (Keyboard.getEventKeyState()) {
+					if (Keyboard.getEventKey() == Keyboard.KEY_F) {
+					    	flyMode = !flyMode;
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_C) {
+					    	doCollisionChecking = !doCollisionChecking;
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_B) {
+					    	renderSkybox = !renderSkybox;
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_V) {
+					    	wireframe = !wireframe;
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
+							isPaused = !isPaused;
+							Mouse.setGrabbed(!Mouse.isGrabbed());
+					}
+				}
+			}
 			
 			if (closeRequested) break;
 		}
@@ -129,6 +168,11 @@ public class Game {
 		cubeGame.start();
 	}
 	
+	public void finalize() {
+		terrain.release();
+		Display.destroy();
+	}
+	
 	public void update() {
 		camera.hasGravitiedThisFrame = false;
 		Lighting.setIsUnderwater(camera.coordinates.y < 7.0f);
@@ -139,8 +183,6 @@ public class Game {
 				camera.addRotation(new Vector3f(Mouse.getDY() * MOUSE_SPEED_SCALE, -Mouse.getDX() * MOUSE_SPEED_SCALE, 0.0f));
 				
 			// Handle keypresses
-			if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
-				closeRequested = true;
 			if(Keyboard.isKeyDown(Keyboard.KEY_W))
 				camera.move(movementSpeed, Camera.FORWARD, 0, doCollisionChecking, flyMode);
 			if(Keyboard.isKeyDown(Keyboard.KEY_S))
@@ -161,20 +203,7 @@ public class Game {
 				camera.move(0, Camera.RIGHT, FALSE_GRAVITY_SPEED * 2, doCollisionChecking, flyMode);
 			
 			
-			// Check for pressed keys
-			while (Keyboard.next()) {
-				if (Keyboard.getEventKeyState()) {
-					if (Keyboard.getEventKey() == Keyboard.KEY_F) {
-					    	flyMode = !flyMode;
-					} else if (Keyboard.getEventKey() == Keyboard.KEY_C) {
-					    	doCollisionChecking = !doCollisionChecking;
-					} else if (Keyboard.getEventKey() == Keyboard.KEY_B) {
-					    	renderSkybox = !renderSkybox;
-					} else if (Keyboard.getEventKey() == Keyboard.KEY_V) {
-					    	wireframe = !wireframe;
-					}
-				}
-			}
+			
 			
 		// Apply gravity
 		if(!flyMode) {
@@ -203,7 +232,7 @@ public class Game {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
 		//GL11.glEnable(GL11.GL_BLEND);
-		//GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 	}
@@ -221,10 +250,43 @@ public class Game {
 		terrain.render();
 	}
 	
+	public void renderTextLine(int lineNum, String string) {
+		renderTextLine(lineNum, string, 0);
+	}
+	
+	public void renderTextLine(int lineNum, String string, int offsetX) {
+		font.drawString(offsetX + 1, lineNum * TEXT_LINE_HEIGHT + 1, string, Color.black);
+		font.drawString(offsetX, lineNum * TEXT_LINE_HEIGHT, string, Color.white);
+	}
+	
 	public void render2d() {
+		if (isPaused) {
+			// set the color of the quad (R,G,B,A)
+			GL11.glEnable(GL11.GL_BLEND);
+	        GL11.glColor4f(0.3f, 0.3f, 0.3f,0.7f);
+	         
+	        // draw quad
+	        GL11.glBegin(GL11.GL_QUADS);
+	            GL11.glVertex2f(0,0);
+	            GL11.glVertex2f(Display.getWidth(),0);
+	            GL11.glVertex2f(Display.getWidth(),Display.getHeight());
+	            GL11.glVertex2f(0,Display.getHeight());
+	        GL11.glEnd();
+	        
+	        GL11.glDisable(GL11.GL_BLEND);
+		}
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glShadeModel(GL11.GL_SMOOTH);
 		
-		Color.white.bind();
-		font.drawString(10, 100, "NICE LOOKING FONTS!", Color.black);
+		TextureImpl.unbind();
+		renderTextLine(0, "x: " + camera.coordinates.x );
+		renderTextLine(1, "y: " + camera.coordinates.y );
+		renderTextLine(2, "z: " + camera.coordinates.z );
+		renderTextLine(3, fps + " fps, " + ups + " ups");
+		
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
 	
 	public void render() {
@@ -236,15 +298,17 @@ public class Game {
 		int width = Display.getDesktopDisplayMode().getWidth();
 		int height = Display.getDesktopDisplayMode().getHeight();
 		
-		//GL11.glDepthMask(true);
-		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		
 		GL11.glLoadIdentity();
 		GLU.gluPerspective(70.0f, (float)width / (float)height, 0.1f, 200.0f);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
-		GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
+		if (!Lighting.isUnderwater) {
+			GL11.glClearColor(AMBIENCE_COLOR.x, AMBIENCE_COLOR.y, AMBIENCE_COLOR.z, AMBIENCE_COLOR.a);
+		} else {
+			GL11.glClearColor(AMBIENCE_COLOR.x - 0.7f, AMBIENCE_COLOR.y - 0.7f, AMBIENCE_COLOR.z - 0.6f, AMBIENCE_COLOR.a);
+		}
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glPushMatrix();
 		render3d();
@@ -252,27 +316,15 @@ public class Game {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 
-		GL11.glOrtho(0, width, 0, height, -1, 1);
+		GL11.glOrtho(0, width, height, 0, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
         GL11.glDisable( GL11.GL_DEPTH_TEST );
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_CULL_FACE);
-        //GL11.glDepthMask(false);
         GL11.glPushMatrix();
 
-        // set the color of the quad (R,G,B,A)
-        GL11.glColor4f(0.5f,0.5f,1.0f,0.5f);
-         
-        // draw quad
-        /*GL11.glBegin(GL11.GL_QUADS);
-            GL11.glVertex2f(100,100);
-            GL11.glVertex2f(100+200,100);
-            GL11.glVertex2f(100+200,100+200);
-            GL11.glVertex2f(100,100+200);
-        GL11.glEnd();*/
-        
-	    //render2d();
+	    render2d();
 	    
 	    GL11.glPopMatrix();
 	    GL11.glEnable(GL11.GL_CULL_FACE);
