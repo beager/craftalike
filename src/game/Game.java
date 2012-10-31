@@ -66,7 +66,10 @@ public class Game {
 	private boolean debugScreen = false;
 	public static long deltaTime;
 	private Cube targetCube;
-	private boolean playMusic = false;;
+	private boolean playMusic = true;
+	private boolean pickBlock = false;
+	private boolean placeBlock = false;
+	private int mouseDelayer = 0;
 	
 	public void start() {
 		// Create the display
@@ -246,6 +249,17 @@ public class Game {
 			if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
 				camera.move(0, Camera.RIGHT, FALSE_GRAVITY_SPEED * 2, doCollisionChecking, flyMode);
 			
+			// handle mouse clicks
+			if (Mouse.isButtonDown(0) && (mouseDelayer == 0)) {
+				pickBlock = true;
+				mouseDelayer = 20;
+			} else if (Mouse.isButtonDown(1) && (mouseDelayer == 0)) {
+				placeBlock = true;
+				mouseDelayer = 20;
+			}
+			
+			if (mouseDelayer  > 0) mouseDelayer--;
+			
 		// Apply gravity
 		if(!flyMode) {
 			camera.move(0, Camera.FORWARD, camera.gravitySpeed, doCollisionChecking, flyMode);
@@ -268,29 +282,30 @@ public class Game {
 		AMBIENCE_COLOR.x = sinPos - 0.4f;
 		AMBIENCE_COLOR.y = sinPos - 0.4f;
 		AMBIENCE_COLOR.z = sinPos - 0.2f;
+		
+		if (pickBlock) {
+			pickBlock = false;
+			if (camera.hasTarget)
+				terrain.deleteBlockAt(camera.target);
+		}
+		
+		if (placeBlock ) {
+			placeBlock = false;
+			if (camera.hasTarget)
+				terrain.placeBlockAt(camera.coordinates, camera.target);
+		}
 	}
 	
 	public void initGl() {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		//GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
-		//GL11.glEnable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		
-		/*GL11.glMatrixMode(GL11.GL_PROJECTION);
-		
-		GL11.glLoadIdentity();
-		
-		float ratio = ((float)Display.getDisplayMode().getWidth())/((float)Display.getDisplayMode().getHeight());
-		float fov = FOV;
-
-		GLU.gluPerspective(FOV, ratio, 0.1f, 160f);
-		
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);*/
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 	}
 	
 	public void render3d() {
@@ -304,14 +319,6 @@ public class Game {
 		
 		// Render the terrain
 		terrain.render();
-		
-		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-		//targetCube.render();
-		
-		if(wireframe)
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-		else 
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 	}
 	
 	public void renderTextLine(int lineNum, String string) {

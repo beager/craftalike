@@ -32,7 +32,7 @@ public class Camera {
 	
 	public void updateLookingAt()
 	{
-		float delta = 1.0f;
+		float delta = 0.5f;
 		Vector3f myCoords = new Vector3f(coordinates.x, coordinates.y, coordinates.z);
 		for (int i = 0; i < 10; i++)
 		{
@@ -42,6 +42,7 @@ public class Camera {
 			if (terrain.solidAt(myCoords)) {
 				target = new Vector3f(myCoords.x, myCoords.y, myCoords.z);
 				hasTarget = true;
+				return;
 			}
 		}
 		

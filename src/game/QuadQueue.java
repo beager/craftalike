@@ -25,11 +25,8 @@ public class QuadQueue {
 			String tid = tids.next();
 		
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, Integer.parseInt(tid));
-			//GL11.glBindTexture(GL11.GL_TEXTURE_2D, 4);
-			
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, Integer.parseInt(tid)); 
 			GL11.glBegin(GL11.GL_QUADS);
-			
 			
 			while (!quadQueues.get(tid).isEmpty()) {
 				Vector3f v[] = quadQueues.get(tid).remove(0);

@@ -16,6 +16,8 @@ public class Chunk {
 	// Optional translation
 	private Vector3f translation;
 	
+	private int smoothLevel;
+	
 	// The 3d array containing the cubes
 	public Cube[][][] terrain;
 	
@@ -35,6 +37,8 @@ public class Chunk {
 	private int displayList;
 
 	public boolean released = false;
+	
+	public boolean isChanged = true;
 	
 	public Chunk(int x, int z, Vector3 arraySize, Vector3f cubeSize, Vector3f translation) {
 		this.x = x;
@@ -64,6 +68,7 @@ public class Chunk {
 	
 	public void generateTerrain(int maxHeight, int minHeight, int smoothLevel, int seed, float noiseSize, float persistence, int octaves, boolean textures) {
 		// Stores the height of each x, z coordinate
+		this.smoothLevel = smoothLevel;
 		int perlinSizeZ = arraySize.z + smoothLevel * 2;
 		int perlinSizeX = arraySize.x + smoothLevel * 2;
 		heightData = new int[perlinSizeX][perlinSizeZ];
@@ -146,6 +151,11 @@ public class Chunk {
 				}
 			}
 		}
+		
+		calculateVisibleSides();
+	}
+		
+	private void calculateVisibleSides() {
 
 		// Calculate which sides each cube needs to render
 		for(int z = 0; z < arraySize.z; z++) {
@@ -158,58 +168,68 @@ public class Chunk {
 					boolean renderBack = false;
 					boolean renderRight = false;
 					boolean renderLeft = false;
-					if (terrain[x][y][z].type == Cube.TYPE_WATER) {
-						if (y == WATER_LEVEL) {
-							renderTop = true;
-						}
-					} else {
-						
-						
-						
-						if (y == arraySize.y - 1) {
-							renderTop = true;
-						} else if ((terrain[x][y + 1][z] != null) && (terrain[x][y+1][z].type == Cube.TYPE_WATER)) {
-							renderTop = true;
-						} else if (terrain[x][y+1][z] != null) {
-							renderTop = (terrain[x][y + 1][z].type == Cube.TYPE_WATER);
+					if (terrain[x][y][z] != null)
+					{
+						if (terrain[x][y][z].type == Cube.TYPE_WATER) {
+							if (y == WATER_LEVEL) {
+								renderTop = true;
+							}
 						} else {
-							renderTop = true;
+							if (y == arraySize.y - 1) {
+								renderTop = true;
+							} else if ((terrain[x][y + 1][z] != null) && (terrain[x][y+1][z].type == Cube.TYPE_WATER)) {
+								renderTop = true;
+							} else if (terrain[x][y+1][z] != null) {
+								renderTop = (terrain[x][y + 1][z].type == Cube.TYPE_WATER);
+							} else {
+								renderTop = true;
+							}
+							
+							if (y == 0) {
+								renderBottom = true;
+							} else if ((terrain[x][y - 1][z] != null) && (terrain[x][y - 1][z].type == Cube.TYPE_WATER)) {
+								renderBottom = true;
+							} else if (terrain[x][y - 1][z] != null) {
+								renderBottom = (terrain[x][y - 1][z].type == Cube.TYPE_WATER);
+							} else {
+								renderBottom = true;
+							}
+							
+							if (z == arraySize.z - 1) {
+								renderFront = true;
+							} else if (terrain[x][y][z + 1] != null) {
+								renderFront = (terrain[x][y][z + 1].type == Cube.TYPE_WATER);
+							} else {
+								renderFront = true;
+							}
+							
+							if (z == 0) {
+								renderBack = true;
+							} else if (terrain[x][y][z - 1] != null) {
+								renderBack = (terrain[x][y][z - 1].type == Cube.TYPE_WATER);
+							} else {
+								renderBack = true;
+							}
+							
+							if (x == arraySize.x - 1) {
+								renderRight = true;
+							} else if (terrain[x + 1][y][z] != null) {
+								renderRight = (terrain[x + 1][y][z].type == Cube.TYPE_WATER);
+							} else {
+								renderRight = true;
+							}
+							
+							if (x == 0) {
+								renderLeft = true;
+							} else if (terrain[x - 1][y][z] != null) {
+								renderLeft = (terrain[x - 1][y][z].type == Cube.TYPE_WATER);
+							} else {
+								renderLeft = true;
+							}
 						}
 						
-						if (z == arraySize.z - 1) {
-							renderFront = true;
-						} else if (terrain[x][y][z + 1] != null) {
-							renderFront = (terrain[x][y][z + 1].type == Cube.TYPE_WATER);
-						} else {
-							renderFront = true;
-						}
-						
-						if (z == 0) {
-							renderBack = true;
-						} else if (terrain[x][y][z - 1] != null) {
-							renderBack = (terrain[x][y][z - 1].type == Cube.TYPE_WATER);
-						} else {
-							renderBack = true;
-						}
-						
-						if (x == arraySize.x - 1) {
-							renderRight = true;
-						} else if (terrain[x + 1][y][z] != null) {
-							renderRight = (terrain[x + 1][y][z].type == Cube.TYPE_WATER);
-						} else {
-							renderRight = true;
-						}
-						
-						if (x == 0) {
-							renderLeft = true;
-						} else if (terrain[x - 1][y][z] != null) {
-							renderLeft = (terrain[x - 1][y][z].type == Cube.TYPE_WATER);
-						} else {
-							renderLeft = true;
-						}
+						terrain[x][y][z].setVisibleSides(renderTop, renderBottom, renderFront, renderBack, renderRight, renderLeft);
 					}
-					
-					terrain[x][y][z].setVisibleSides(renderTop, renderBottom, renderFront, renderBack, renderRight, renderLeft);
 				}
 			}
 		}
@@ -288,22 +308,28 @@ public class Chunk {
 	
 	public void render() {
 		// Call the display list
-		displayList = GL11.glGenLists(1);
-		GL11.glNewList(displayList, GL11.GL_COMPILE);
+		released = false;
+		if (isChanged)
+		{
+			isChanged = false;
+			release();
+			released = false;
 		
-		for(int z = 0; z < arraySize.z; z++) {
-			for(int x = 0; x < arraySize.x; x++) {
-				for(int y = 0; y < arraySize.y; y++) {
-					if(terrain[x][y][z] != null) {
-						terrain[x][y][z].render();
+			displayList = GL11.glGenLists(1);
+			GL11.glNewList(displayList, GL11.GL_COMPILE);
+			
+			for(int z = 0; z < arraySize.z; z++) {
+				for(int x = 0; x < arraySize.x; x++) {
+					for(int y = 0; y < arraySize.y; y++) {
+						if(terrain[x][y][z] != null) {
+							terrain[x][y][z].render();
+						}
 					}
 				}
 			}
+			QuadQueue.renderAll();
+			GL11.glEndList();
 		}
-		
-		QuadQueue.renderAll();
-		GL11.glEndList();
-		
 		if (!released)
 			GL11.glCallList(displayList);
 	}
@@ -311,6 +337,39 @@ public class Chunk {
 	public void release() {
 		GL11.glDeleteLists(displayList, 1);
 		released = true;
+	}
+
+	public void deleteBlockAt(Vector3f pos) {
+		isChanged = true;
+		Vector3 index = new Vector3(
+			(int) Math.floor(((pos.x % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE),
+			(int) Math.floor(((pos.y % Game.CHUNK_HEIGHT) + Game.CHUNK_HEIGHT) % Game.CHUNK_HEIGHT),
+			(int) Math.floor(((pos.z % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE)
+		);
+		
+		if ((index.x >= 0) && (index.y >= 0) && (index.z >= 0)) {
+			terrain[index.x][index.y][index.z] = null;
+			release();
+			calculateVisibleSides();
+			render();
+		}
+	}
+
+	public void createBlockAt(Vector3f pos) {
+		// TODO Auto-generated method stub
+		isChanged = true;
+		Vector3 index = new Vector3(
+			(int) Math.floor(((pos.x % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE),
+			(int) Math.floor(((pos.y % Game.CHUNK_HEIGHT) + Game.CHUNK_HEIGHT) % Game.CHUNK_HEIGHT),
+			(int) Math.floor(((pos.z % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE)
+		);
+
+		if ((index.x >= 0) && (index.y >= 0) && (index.z >= 0)) {
+			terrain[index.x][index.y][index.z] = createCube(index, true);
+			release();
+			calculateVisibleSides();
+			render();
+		}
 	}
 	
 }

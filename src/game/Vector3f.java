@@ -29,4 +29,8 @@ public class Vector3f {
 	public static Vector3f add(Vector3f a, Vector3f b) {
 		return new Vector3f(a.x + b.x, a.y + b.y, a.z + b.z);
 	}
+	
+	public static Vector3f midpoint (Vector3f a, Vector3f b) {
+		return new Vector3f((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+	}
 }

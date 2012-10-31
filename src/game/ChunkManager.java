@@ -9,9 +9,10 @@ import org.lwjgl.opengl.GL11;
 
 public class ChunkManager {
 	private HashMap<String, Chunk> chunkMap = new HashMap<String, Chunk>();
+	private HashMap<String, Chunk> sleepingChunks = new HashMap<String, Chunk>();
 	private int seed;
 
-	private static int chunkNum = 1;
+	private static int chunkNum = 8;
 
 	public ChunkManager() {
 		
@@ -28,7 +29,7 @@ public class ChunkManager {
 		
 		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum - 1; x++) {
 			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum - 1; z++) {
-				generateChunk(x, z);
+				getChunk(x, z);
 			}
 		}
 	}
@@ -57,18 +58,15 @@ public class ChunkManager {
 		for (Iterator<String> toDelete = deletions.iterator(); toDelete
 				.hasNext();) {
 			String deletion = toDelete.next();
-			chunkMap.get(deletion).release();
+			sleepingChunks.put(deletion, chunkMap.get(deletion));
 			chunkMap.remove(deletion);
 		}
-
-		// check positions near the player
-		// if it is near, and doesnt exist, create it.
-		// check current chunk first
+		
 		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
 		if (!chunkMap.containsKey(hashKey)
 				&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO
 		{
-			generateChunk(inChunkX, inChunkZ);
+			getChunk(inChunkX, inChunkZ);
 			return;
 		}
 		
@@ -78,10 +76,23 @@ public class ChunkManager {
 				if (!chunkMap.containsKey(hashKey)
 						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO eventing
 				{
-					generateChunk(x, z);
+					getChunk(x, z);
 					return;
 				}
 			}
+		}
+	}
+	
+	public void getChunk(int offsetX, int offsetZ) {
+		String hashKey = String.valueOf(offsetX) + "," + String.valueOf(offsetZ);
+		if (sleepingChunks.containsKey(hashKey))
+		{
+			chunkMap.put(hashKey, sleepingChunks.get(hashKey));
+			sleepingChunks.remove(hashKey);
+		}
+		else
+		{
+			generateChunk(offsetX, offsetZ);
 		}
 	}
 
@@ -149,6 +160,48 @@ public class ChunkManager {
 		}
 
 		return false;
+	}
+
+	public void deleteBlockAt(Vector3f pos) {
+		// TODO Auto-generated method stub
+		int inChunkX, inChunkZ;
+		
+		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
+		inChunkZ = pos.z < 0 ? (int) (pos.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.z / Game.CHUNK_SIZE;
+		
+		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
+		if (chunkMap.containsKey(hashKey)) // lol throttling, actually a TODO
+		{
+			chunkMap.get(hashKey).deleteBlockAt(pos);
+			return;
+		}
+	}
+
+	public void placeBlockAt(Vector3f coordinates, Vector3f target) {
+		// find block intersection
+		Vector3f midpoint;
+		
+		for (int i = 0; i < 10; i++) { // ten passes of precision;
+			midpoint = Vector3f.midpoint(coordinates, target);
+			if (solidAt(midpoint))
+			{
+				//still solid, back it up
+				target = midpoint;
+			} else {
+				coordinates = midpoint;
+			}
+		}
+		
+		int inChunkX = coordinates.x < 0 ? (int) (coordinates.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) coordinates.x / Game.CHUNK_SIZE;
+		int inChunkZ = coordinates.z < 0 ? (int) (coordinates.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) coordinates.z / Game.CHUNK_SIZE;
+		
+		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
+		if (chunkMap.containsKey(hashKey)) // lol throttling, actually a TODO
+		{
+			chunkMap.get(hashKey).createBlockAt(coordinates);
+			return;
+		}
+		
 	}
 
 }

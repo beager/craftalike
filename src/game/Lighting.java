@@ -23,10 +23,10 @@ public class Lighting {
 		    lightAmbient.put(2, Game.AMBIENCE_COLOR.z - 0.6f);
 		    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
 		} else {
-		    lightAmbient.put(0, Game.AMBIENCE_COLOR.x + 0.5f);
-		    lightAmbient.put(1, Game.AMBIENCE_COLOR.y + 0.5f);
-		    lightAmbient.put(2, Game.AMBIENCE_COLOR.z + 0.5f);
-		    lightAmbient.put(3, Game.AMBIENCE_COLOR.a);
+		    lightAmbient.put(0, (Game.AMBIENCE_COLOR.x * 2.0f) + 2f);
+		    lightAmbient.put(1, (Game.AMBIENCE_COLOR.y * 2.0f) + 2f);
+		    lightAmbient.put(2, (Game.AMBIENCE_COLOR.z * 2.0f) + 2f);
+		    lightAmbient.put(3, 1f);
 		}
 	    // Diffuse Light
 	    lightDiffuse.put(0, 1.0f);
