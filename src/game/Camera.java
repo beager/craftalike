@@ -17,6 +17,9 @@ public class Camera {
 	
 	public Vector3f coordinates;
 	public Vector3f rotation;
+	public Vector3f target;
+	
+	public boolean hasTarget = false;
 	
 	private ChunkManager terrain;
 	
@@ -24,6 +27,25 @@ public class Camera {
 		this.coordinates = coordinates;
 		this.rotation = rotation;
 		this.terrain = terrain;
+		this.target = new Vector3f(0f, 0f, 0f);
+	}
+	
+	public void updateLookingAt()
+	{
+		float delta = 1.0f;
+		Vector3f myCoords = new Vector3f(coordinates.x, coordinates.y, coordinates.z);
+		for (int i = 0; i < 10; i++)
+		{
+			myCoords.x += Math.cos(Math.toRadians(rotation.x)) * -Math.sin(Math.toRadians(rotation.y)) * delta;
+			myCoords.y += Math.sin(Math.toRadians(rotation.x)) * delta;
+			myCoords.z += Math.cos(Math.toRadians(rotation.x)) * -Math.cos(Math.toRadians(rotation.y)) * delta;
+			if (terrain.solidAt(myCoords)) {
+				target = new Vector3f(myCoords.x, myCoords.y, myCoords.z);
+				hasTarget = true;
+			}
+		}
+		
+		hasTarget = false;
 	}
 	
 	public void move(float delta, int direction, float gravityDelta, boolean collisionChecking, boolean flyMode) {

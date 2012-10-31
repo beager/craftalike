@@ -12,11 +12,14 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.LWJGLUtil;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.TrueTypeFont;
+import org.newdawn.slick.openal.SoundStore;
 import org.newdawn.slick.opengl.TextureImpl;
 import org.newdawn.slick.util.ResourceLoader;
 
@@ -60,7 +63,10 @@ public class Game {
 	private boolean closeRequested = false;
 	private int displayFps;
 	private int displayUps;
+	private boolean debugScreen = false;
 	public static long deltaTime;
+	private Cube targetCube;
+	private boolean playMusic = false;;
 	
 	public void start() {
 		// Create the display
@@ -84,9 +90,9 @@ public class Game {
 		// Create the terrain
 		terrain = new ChunkManager();
 		
-		Vector3f startPos = new Vector3f(0.0f, 80.0f, 0.0f);
+		Vector3f startPos = new Vector3f(8.0f, 80.0f, 8.0f);
 		
-		terrain.generate(startPos);
+		//terrain.generate(startPos);
 
 		// Create the camera
 		camera = new Camera(startPos, new Vector3f(0.0f, 0.0f, 0.0f), terrain);
@@ -104,6 +110,10 @@ public class Game {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		targetCube = new Cube(new Vector3f(0f,0f,0f), new Vector3f(1f,1f,1f), new Vector4f(0f,0f,0f,1f), 0, TextureStore.getTexture("res/pix-stone.png"));
+		
+		if (playMusic ) Music.playMusic();
 
 		startTime = System.currentTimeMillis();
 
@@ -123,8 +133,10 @@ public class Game {
 			while (delta >= 1) {
 				if (!isPaused) {
 					update();
-					ups++;
 				}
+
+				ups++;
+				SoundStore.get().poll(0);
 				delta--;
 			}
 			render();
@@ -144,16 +156,18 @@ public class Game {
 			while (Keyboard.next()) {
 				if (Keyboard.getEventKeyState()) {
 					if (Keyboard.getEventKey() == Keyboard.KEY_F) {
-					    	flyMode = !flyMode;
+				    	flyMode = !flyMode;
 					} else if (Keyboard.getEventKey() == Keyboard.KEY_C) {
-					    	doCollisionChecking = !doCollisionChecking;
+				    	doCollisionChecking = !doCollisionChecking;
 					} else if (Keyboard.getEventKey() == Keyboard.KEY_B) {
-					    	renderSkybox = !renderSkybox;
+				    	renderSkybox = !renderSkybox;
 					} else if (Keyboard.getEventKey() == Keyboard.KEY_V) {
-					    	wireframe = !wireframe;
+				    	wireframe = !wireframe;
 					} else if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
-							isPaused = !isPaused;
-							Mouse.setGrabbed(!Mouse.isGrabbed());
+						isPaused = !isPaused;
+						Mouse.setGrabbed(!Mouse.isGrabbed());
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_P) {
+						debugScreen  = !debugScreen;
 					}
 				}
 			}
@@ -199,6 +213,7 @@ public class Game {
 	
 	public void finalize() {
 		terrain.release();
+		AL.destroy();
 		Display.destroy();
 	}
 	
@@ -231,16 +246,17 @@ public class Game {
 			if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
 				camera.move(0, Camera.RIGHT, FALSE_GRAVITY_SPEED * 2, doCollisionChecking, flyMode);
 			
-			
-			
-			
 		// Apply gravity
 		if(!flyMode) {
 			camera.move(0, Camera.FORWARD, camera.gravitySpeed, doCollisionChecking, flyMode);
 			camera.updateGravity();
 		}
 		
-		terrain.updateVisibleChunks(camera.coordinates.x, camera.coordinates.z);
+		camera.updateLookingAt();
+		Vector3f rounded = new Vector3f((float) Math.floor(camera.target.x), (float) Math.floor(camera.target.y), (float) Math.floor(camera.target.z));
+		targetCube.setPos(rounded);
+		
+		terrain.updateVisibleChunks(camera.coordinates);
 		
 		long timeElapsed = System.currentTimeMillis() - startTime;
 		float sinPos = (float) Math.sin((timeElapsed / 80000.0f) % (2.0f * Math.PI) );
@@ -264,6 +280,17 @@ public class Game {
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		
+		/*GL11.glMatrixMode(GL11.GL_PROJECTION);
+		
+		GL11.glLoadIdentity();
+		
+		float ratio = ((float)Display.getDisplayMode().getWidth())/((float)Display.getDisplayMode().getHeight());
+		float fov = FOV;
+
+		GLU.gluPerspective(FOV, ratio, 0.1f, 160f);
+		
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);*/
 	}
 	
 	public void render3d() {
@@ -277,6 +304,14 @@ public class Game {
 		
 		// Render the terrain
 		terrain.render();
+		
+		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		//targetCube.render();
+		
+		if(wireframe)
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		else 
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 	}
 	
 	public void renderTextLine(int lineNum, String string) {
@@ -284,7 +319,7 @@ public class Game {
 	}
 	
 	public void renderTextLine(int lineNum, String string, int offsetX) {
-		font.drawString(offsetX + 1, lineNum * TEXT_LINE_HEIGHT + 1, string, Color.black);
+		font.drawString(offsetX + 2, lineNum * TEXT_LINE_HEIGHT + 2, string, Color.black);
 		font.drawString(offsetX, lineNum * TEXT_LINE_HEIGHT, string, Color.white);
 	}
 	
@@ -309,18 +344,24 @@ public class Game {
 		GL11.glShadeModel(GL11.GL_SMOOTH);
 		
 		TextureImpl.unbind();
-		renderTextLine(0, "x: " + camera.coordinates.x );
-		renderTextLine(1, "y: " + camera.coordinates.y );
-		renderTextLine(2, "z: " + camera.coordinates.z );
-		renderTextLine(3, displayFps + " fps, " + displayUps + " ups");
+		if (debugScreen) {
+			int i = 0;
+			renderTextLine(i++, "x: " + camera.coordinates.x );
+			renderTextLine(i++, "y: " + camera.coordinates.y );
+			renderTextLine(i++, "z: " + camera.coordinates.z );
+			renderTextLine(i++, displayFps + " fps, " + displayUps + " ups");
+			renderTextLine(i++, "looking at: " + camera.target.x + ", " + camera.target.y + ", " + camera.target.z);
+			int totalMem = (int) Runtime.getRuntime().totalMemory() / (1000000);
+			int usedMem = totalMem - ((int) Runtime.getRuntime().freeMemory() / (1000000));
+			renderTextLine(i++, "mem/total: " + usedMem + "/" + totalMem);
+			
+		}
 		
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 	}
 	
 	public void render() {
-		
-		
 		Lighting.initLighting();
 		
 		Lighting.initFog();
@@ -332,14 +373,8 @@ public class Game {
 		GL11.glLoadIdentity();
 		
 		float ratio = ((float)Display.getDisplayMode().getWidth())/((float)Display.getDisplayMode().getHeight());
-		float fov = FOV;
-		float near = 0.1f;
-		float far = 80;
-		float top = (float) (near*Math.tan(Math.PI/180*fov/2));
-		float bottom = -top;
-		float right = ratio*top;
-		float left = -right;
-		GL11.glFrustum(left, right, bottom, top, near, far);
+
+		GLU.gluPerspective(FOV, ratio, 0.1f, 160f);
 		
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		
@@ -389,7 +424,6 @@ public class Game {
             if (paths.contains(libPath.getAbsolutePath())) {
                 return;
             }
-            System.out.println("Adding path" + libPath.getAbsolutePath());
             paths.add(0, libPath.getAbsolutePath()); // Add to beginning, to override system libraries
 
             usrPathsField.set(null, paths.toArray(new String[paths.size()]));

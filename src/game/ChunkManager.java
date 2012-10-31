@@ -8,36 +8,38 @@ import java.util.Random;
 import org.lwjgl.opengl.GL11;
 
 public class ChunkManager {
-	private HashMap<String, CubeTerrain> chunkMap = new HashMap<String, CubeTerrain>();
+	private HashMap<String, Chunk> chunkMap = new HashMap<String, Chunk>();
 	private int seed;
 
-	private static int chunkNum = 4;
+	private static int chunkNum = 1;
 
 	public ChunkManager() {
 		
 	}
 
-	public void generate(Vector3f startPos) {
+	public void generate(Vector3f pos) {
 		Random rand = new Random();
 		seed = rand.nextInt() & 0xFFFF;
 		
 		int inChunkX, inChunkZ;
-		inChunkX = (int) startPos.x / Game.CHUNK_SIZE;
-		inChunkZ = (int) startPos.z / Game.CHUNK_SIZE;
-
-		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum; x++) {
-			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum; z++) {
+		
+		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
+		inChunkZ = pos.z < 0 ? (int) (pos.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.z / Game.CHUNK_SIZE;
+		
+		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum - 1; x++) {
+			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum - 1; z++) {
 				generateChunk(x, z);
 			}
 		}
 	}
 
-	public void updateVisibleChunks(float posX, float posZ) {
+	public void updateVisibleChunks(Vector3f pos) {
 		// we want to check if a chunk is near the player.
 		int inChunkX, inChunkZ;
-		inChunkX = (int) posX / Game.CHUNK_SIZE;
-		inChunkZ = (int) posZ / Game.CHUNK_SIZE;
-
+		
+		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
+		inChunkZ = pos.z < 0 ? (int) (pos.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.z / Game.CHUNK_SIZE;
+		
 		// check existing chunks
 		// if chunk is too far, remove it
 		// if chunk is near enough, it's ok.
@@ -61,11 +63,20 @@ public class ChunkManager {
 
 		// check positions near the player
 		// if it is near, and doesnt exist, create it.
+		// check current chunk first
+		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
+		if (!chunkMap.containsKey(hashKey)
+				&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO
+		{
+			generateChunk(inChunkX, inChunkZ);
+			return;
+		}
+		
 		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum; x++) {
 			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum; z++) {
-				String hashKey = String.valueOf(x) + "," + String.valueOf(z);
+				hashKey = String.valueOf(x) + "," + String.valueOf(z);
 				if (!chunkMap.containsKey(hashKey)
-						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO
+						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO eventing
 				{
 					generateChunk(x, z);
 					return;
@@ -80,20 +91,20 @@ public class ChunkManager {
 		String hashKey = String.valueOf(offsetX) + ","
 				+ String.valueOf(offsetZ);
 
-		chunkMap.put(hashKey, new CubeTerrain(offsetX, offsetZ, new Vector3(
+		chunkMap.put(hashKey, new Chunk(offsetX, offsetZ, new Vector3(
 				Game.CHUNK_SIZE, Game.CHUNK_HEIGHT, Game.CHUNK_SIZE),
 				new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f((float) offsetX
 						* Game.CHUNK_SIZE, 0.0f, (float) offsetZ
 						* Game.CHUNK_SIZE)));
 
-		final int TERRAIN_MAX_HEIGHT = 20;
-		final int TERRAIN_MIN_HEIGHT = 7;
+		final int TERRAIN_MAX_HEIGHT = 32;
+		final int TERRAIN_MIN_HEIGHT = 12;
 		final int TERRAIN_SMOOTH_LEVEL = 0;
 
 		final int TERRAIN_GEN_SEED = seed;
-		final float TERRAIN_GEN_NOISE_SIZE = 0.06f;
+		final float TERRAIN_GEN_NOISE_SIZE = 0.01f;
 		final float TERRAIN_GEN_PERSISTENCE = 0.9f;
-		final int TERRAIN_GEN_OCTAVES = 3;
+		final int TERRAIN_GEN_OCTAVES = 6;
 
 		chunkMap.get(hashKey).generateTerrain(TERRAIN_MAX_HEIGHT,
 				TERRAIN_MIN_HEIGHT, TERRAIN_SMOOTH_LEVEL, TERRAIN_GEN_SEED,

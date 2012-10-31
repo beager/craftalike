@@ -1,4 +1,10 @@
 package game;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.ARBVertexBufferObject;
+import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.opengl.Texture;
 
 public class Cube {
@@ -25,6 +31,14 @@ public class Cube {
 	
 	// Properties
 	public static boolean isSolid = true;
+	
+	public void setPos1(Vector3f pos1) {
+		this.pos1 = pos1;
+	}
+	
+	public void setPos2(Vector3f pos2) {
+		this.pos2 = pos2;
+	}
 	
 	public Cube(Vector3f pos1, Vector3f pos2, Vector4f color, int type, Texture texture) {
 		this.pos1 = pos1;
@@ -108,5 +122,34 @@ public class Cube {
 			QuadQueue.add(texture.getTextureID(), vertices);
 		}
 	}
+
+	public void setPos(Vector3f target) {
+		setPos1(target);
+		setPos2(new Vector3f(target.x + 1f, target.y + 1f, target.z + 1f));
+	}
+	
+	public static int createVBOID() {
+	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+	    IntBuffer buffer = BufferUtils.createIntBuffer(1);
+	    ARBVertexBufferObject.glGenBuffersARB(buffer);
+	    return buffer.get(0);
+	  }
+	  return 0;
+	}
+	
+	public static void bufferData(int id, FloatBuffer buffer) {
+	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+	    ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
+	    ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
+	  }
+	}
+	
+	public static void bufferElementData(int id, IntBuffer buffer) {
+	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+	    ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);
+	    ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
+	  }
+	}
+
 }
 
