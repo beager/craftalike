@@ -5,7 +5,7 @@ import org.newdawn.slick.opengl.Texture;
 
 public class Chunk {
 	
-	private static final int WATER_LEVEL = 6;
+	private static final int WATER_LEVEL = 64;
 
 	// Size of the terrain measured in cubes
 	public Vector3 arraySize;
@@ -104,7 +104,7 @@ public class Chunk {
 		// Randomize the heights using Perlin noise
 		for(int z = 0; z < perlinSizeZ; z++) {
 			for(int x = 0; x < perlinSizeX; x++) {
-					heightData[x][z] = (int) (PerlinNoise2D.perlin2D(x + (int) translation.x, z + (int) translation.z, arraySize.x, arraySize.z, seed, noiseSize, persistence, octaves) * (maxHeight - minHeight) + minHeight);
+					heightData[x][z] = (int) ((PerlinNoise2D.perlin2D(x + (int) translation.x, z + (int) translation.z, arraySize.x, arraySize.z, seed, noiseSize, persistence, octaves) * (maxHeight - minHeight) + minHeight)) + 56;
 					if (heightData[x][z] > Game.CHUNK_HEIGHT - 1) heightData[x][z] = Game.CHUNK_HEIGHT - 1;
 					if (heightData[x][z] < 1) heightData[x][z] = 1;
 			}
@@ -186,9 +186,9 @@ public class Chunk {
 								(float) (z + translation.z) / 14f);
 						if (level > (
 								(SimplexNoise.noise(
-									((float) x + translation.x) / 100,
-									((float) z + translation.z) / 100
-								) + 1) / 2 
+									((float) x + translation.x) / 50,
+									((float) z + translation.z) / 50
+								) + .5d) 
 							)
 						) {
 							if ((terrain[x][y][z] != null) && (terrain[x][y][z].type != Cube.TYPE_WATER))
@@ -294,19 +294,32 @@ public class Chunk {
 		Texture texture = null;
 		int type = 0;
 		
-		if ((arrayPosition.y < 7) && (heightData[arrayPosition.x][arrayPosition.z] - arrayPosition.y < 3)) {
+		if ((arrayPosition.y < WATER_LEVEL) && (heightData[arrayPosition.x][arrayPosition.z] - arrayPosition.y < 3)) {
 				// Sand
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 				texture = sandTexture;
 				type = Cube.TYPE_SAND;
-
+				
 		} else if (heightData[arrayPosition.x][arrayPosition.z] - arrayPosition.y < 3) {
-			if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
+			double biome = SimplexNoise.noise((double) pos1.x / 500d, (double) pos1.z / 500d);
+			if (biome < -0.5d) // 25% chance of desert
+			{
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-				texture = grassTexture;
-				type = Cube.TYPE_GRASS;
-				return new MultiTextureCube(pos1, pos2, color, type, grassTexture, dirtTexture,
-						dirtSideTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture);
+				texture = sandTexture;
+				type = Cube.TYPE_SAND;
+			} else if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
+				if (arrayPosition.y > (WATER_LEVEL + 20))
+				{
+					color = new Vector4f(1f, 1f, 1f, 1f);
+					texture = snowTexture;
+					type = 1;
+				} else {
+					color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+					texture = grassTexture;
+					type = Cube.TYPE_GRASS;
+					return new MultiTextureCube(pos1, pos2, color, type, grassTexture, dirtTexture,
+							dirtSideTexture, dirtSideTexture, dirtSideTexture, dirtSideTexture);
+				}
 			} else {
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 				texture = dirtTexture;
@@ -407,7 +420,6 @@ public class Chunk {
 	}
 
 	public void createBlockAt(Vector3f pos) {
-		// TODO Auto-generated method stub
 		isChanged = true;
 		Vector3 index = new Vector3(
 			(int) Math.floor(((pos.x % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE),

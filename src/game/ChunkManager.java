@@ -12,7 +12,7 @@ public class ChunkManager {
 	private HashMap<String, Chunk> sleepingChunks = new HashMap<String, Chunk>();
 	private int seed;
 
-	private static int chunkNum = 8;
+	private static int chunkNum = 4;
 
 	public ChunkManager() {
 		Random rand = new Random();

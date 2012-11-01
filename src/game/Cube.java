@@ -127,29 +127,7 @@ public class Cube {
 		setPos1(target);
 		setPos2(new Vector3f(target.x + 1f, target.y + 1f, target.z + 1f));
 	}
-	
-	public static int createVBOID() {
-	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-	    IntBuffer buffer = BufferUtils.createIntBuffer(1);
-	    ARBVertexBufferObject.glGenBuffersARB(buffer);
-	    return buffer.get(0);
-	  }
-	  return 0;
-	}
-	
-	public static void bufferData(int id, FloatBuffer buffer) {
-	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-	    ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
-	    ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
-	  }
-	}
-	
-	public static void bufferElementData(int id, IntBuffer buffer) {
-	  if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-	    ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);
-	    ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
-	  }
-	}
+
 
 }
 

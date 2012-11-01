@@ -32,7 +32,7 @@ public class Game {
 	private static final float FOV = 90.0f;
 	
 	public static final int CHUNK_SIZE = 16;
-	public static final int CHUNK_HEIGHT = 64;
+	public static final int CHUNK_HEIGHT = 128;
 	
 	public static final int TEXT_LINE_HEIGHT = 18;
 	
@@ -93,7 +93,7 @@ public class Game {
 		// Create the terrain
 		terrain = new ChunkManager();
 		
-		Vector3f startPos = new Vector3f(8.0f, 80.0f, 8.0f);
+		Vector3f startPos = new Vector3f(8.0f, 129.0f, 8.0f);
 		
 		//terrain.generate(startPos);
 
