@@ -12,7 +12,7 @@ public class Music {
 	
 	public static void playMusic() {
 		try {
-			oggStream = AudioLoader.getStreamingAudio("OGG", ResourceLoader.getResource("/res/audio/music/song1.ogg"));
+			oggStream = AudioLoader.getStreamingAudio("OGG", ResourceLoader.getResource("/res/audio/music/song2.ogg"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
