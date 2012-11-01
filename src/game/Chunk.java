@@ -31,14 +31,23 @@ public class Chunk {
 	private Texture dirtTexture;
 	private Texture dirtSideTexture;
 	private Texture sandTexture;
+	private Texture woodPlanksTexture;
 	
 	private int[][] heightData;
+	
+	private int[][][] simplexData;
 	
 	private int displayList;
 
 	public boolean released = false;
 	
 	public boolean isChanged = true;
+
+	private Texture brickTexture;
+
+	private Texture snowTexture;
+
+	private Texture concreteTexture;
 	
 	public Chunk(int x, int z, Vector3 arraySize, Vector3f cubeSize, Vector3f translation) {
 		this.x = x;
@@ -64,6 +73,10 @@ public class Chunk {
 		dirtTexture = TextureStore.getTexture("res/pix-dirt.png");
 		dirtSideTexture = TextureStore.getTexture("res/pix-grass-side.png");
 		sandTexture = TextureStore.getTexture("res/pix-sand.png");
+		woodPlanksTexture = TextureStore.getTexture("res/pix-planks.png");
+		brickTexture = TextureStore.getTexture("res/pix-brick.png");
+		snowTexture = TextureStore.getTexture("res/pix-snow.png");
+		concreteTexture = TextureStore.getTexture("res/pix-concrete.png");
 	}
 	
 	public void generateTerrain(int maxHeight, int minHeight, int smoothLevel, int seed, float noiseSize, float persistence, int octaves, boolean textures) {
@@ -96,6 +109,8 @@ public class Chunk {
 					if (heightData[x][z] < 1) heightData[x][z] = 1;
 			}
 		}
+		
+		
 		
 		
 		
@@ -148,6 +163,38 @@ public class Chunk {
 						terrain[x - smoothLevel][y][z - smoothLevel] = createWaterCube(new Vector3(x - smoothLevel, y, z - smoothLevel), textures);
 					}
 					heightData[x][z] = WATER_LEVEL;
+				}
+			}
+		}
+		
+		for(int z = 0; z < arraySize.z; z++) {
+			for(int y = 1; y < arraySize.y; y++) {
+				for (int x = 0; x < arraySize.x; x++) {
+					double level = SimplexNoise.noise(
+							(float) (x + translation.x) / 30f, 
+							(float) (y + translation.y) / 30f, 
+							(float) (z + translation.z) / 30f);
+					if (level > 0.8d) {
+						if ((terrain[x][y][z] != null) && (terrain[x][y][z].type != Cube.TYPE_WATER))
+							terrain[x][y][z] = null;
+					}
+					
+					if ((heightData[x][z] - y) > 3) {
+						level = SimplexNoise.noise(
+								(float) (x + translation.x) / 14f, 
+								(float) (y + translation.y) / 7f, 
+								(float) (z + translation.z) / 14f);
+						if (level > (
+								(SimplexNoise.noise(
+									((float) x + translation.x) / 100,
+									((float) z + translation.z) / 100
+								) + 1) / 2 
+							)
+						) {
+							if ((terrain[x][y][z] != null) && (terrain[x][y][z].type != Cube.TYPE_WATER))
+								terrain[x][y][z] = null;
+						}
+					}
 				}
 			}
 		}
@@ -247,20 +294,13 @@ public class Chunk {
 		Texture texture = null;
 		int type = 0;
 		
-		if (arrayPosition.y < 7) {
-			if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
+		if ((arrayPosition.y < 7) && (heightData[arrayPosition.x][arrayPosition.z] - arrayPosition.y < 3)) {
 				// Sand
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 				texture = sandTexture;
 				type = Cube.TYPE_SAND;
-			} else {
-				// Stone
-				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-				texture = stoneTexture;
-				type = Cube.TYPE_STONE;	
-					
-			}
-		} else {
+
+		} else if (heightData[arrayPosition.x][arrayPosition.z] - arrayPosition.y < 3) {
 			if (arrayPosition.y == heightData[arrayPosition.x][arrayPosition.z]) {
 				color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
 				texture = grassTexture;
@@ -272,6 +312,10 @@ public class Chunk {
 				texture = dirtTexture;
 				type = Cube.TYPE_DIRT;
 			}
+		} else {
+			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
+			texture = concreteTexture;
+			type = Cube.TYPE_STONE;
 		}
 		
 		if(!textures)
@@ -285,6 +329,13 @@ public class Chunk {
 		Vector3f pos2 = Vector3f.add(pos1, cubeSize);
 		
 		return new Cube(pos1, pos2, new Vector4f(0.3f, 0.3f, 0.3f, 1.0f), Cube.TYPE_WATER, waterTexture);
+	}
+	
+	private Cube createSpecificCube(Vector3 arrayPosition, Texture texture) {
+		Vector3f pos1 = new Vector3f(arrayPosition.x * cubeSize.x + translation.x, arrayPosition.y * cubeSize.y + translation.y, arrayPosition.z * cubeSize.z + translation.z);
+		Vector3f pos2 = Vector3f.add(pos1, cubeSize);
+		
+		return new Cube(pos1, pos2, new Vector4f(0.3f, 0.3f, 0.3f, 1.0f), 0, texture);
 	}
 	
 	/* Returns true if there is a solid cube at the given coordinates. */
@@ -365,11 +416,22 @@ public class Chunk {
 		);
 
 		if ((index.x >= 0) && (index.y >= 0) && (index.z >= 0)) {
-			terrain[index.x][index.y][index.z] = createCube(index, true);
+			terrain[index.x][index.y][index.z] = createSpecificCube(index, brickTexture);
 			release();
 			calculateVisibleSides();
 			render();
 		}
+	}
+
+	public int getCubeTypeAtVector(Vector3f pos) {
+		Vector3 index = new Vector3(
+			(int) Math.floor(((pos.x % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE),
+			(int) Math.floor(((pos.y % Game.CHUNK_HEIGHT) + Game.CHUNK_HEIGHT) % Game.CHUNK_HEIGHT),
+			(int) Math.floor(((pos.z % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE)
+		);
+
+		return ((index.x >= 0) && (index.y >= 0) && (index.z >= 0) && (terrain[index.x][index.y][index.z] != null)) ?
+				terrain[index.x][index.y][index.z].type : 0;
 	}
 	
 }

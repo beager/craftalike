@@ -15,13 +15,12 @@ public class ChunkManager {
 	private static int chunkNum = 8;
 
 	public ChunkManager() {
-		
+		Random rand = new Random();
+		rand.setSeed(System.nanoTime());
+		seed = rand.nextInt() & 0xFFFF;
 	}
 
 	public void generate(Vector3f pos) {
-		Random rand = new Random();
-		seed = rand.nextInt() & 0xFFFF;
-		
 		int inChunkX, inChunkZ;
 		
 		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
@@ -202,6 +201,21 @@ public class ChunkManager {
 			return;
 		}
 		
+	}
+
+	public int getCubeTypeAtVector(Vector3f pos) {
+		// TODO Auto-generated method stub
+		int inChunkX, inChunkZ;
+		
+		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
+		inChunkZ = pos.z < 0 ? (int) (pos.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.z / Game.CHUNK_SIZE;
+		
+		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
+		if (chunkMap.containsKey(hashKey)) // lol throttling, actually a TODO
+		{
+			return chunkMap.get(hashKey).getCubeTypeAtVector(pos);
+		}
+		return 0;
 	}
 
 }

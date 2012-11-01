@@ -59,7 +59,7 @@ public class Lighting {
 			fogColor.put(Game.AMBIENCE_COLOR.x - 0.7f).put(Game.AMBIENCE_COLOR.y - 0.7f).put(Game.AMBIENCE_COLOR.z - 0.6f).put(Game.AMBIENCE_COLOR.a).flip();
 			GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP2);
 			GL11.glFog(GL11.GL_FOG_COLOR, fogColor);
-			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.4f); // was 0.08
+			GL11.glFogf(GL11.GL_FOG_DENSITY, 0.2f); // was 0.08
 			GL11.glHint(GL11.GL_FOG_HINT, GL11.GL_DONT_CARE);
 		} else {
 			GL11.glEnable(GL11.GL_FOG);
