@@ -69,9 +69,9 @@ public class ChunkManager {
 			return;
 		}
 		
-		for (int foo = 0; foo < chunkNum; foo++) {
-			for (int x = inChunkX - foo; x <= inChunkX + foo; x++) {
-				for (int z = inChunkZ - foo; z <= inChunkZ + foo; z++) {
+		for (int radius = 0; radius < chunkNum; radius++) {
+			for (int x = inChunkX - radius; x <= inChunkX + radius; x++) {
+				for (int z = inChunkZ - radius; z <= inChunkZ + radius; z++) {
 					hashKey = String.valueOf(x) + "," + String.valueOf(z);
 					if (!chunkMap.containsKey(hashKey)
 							&& (Game.ups % 20 == 0)) // lol throttling, actually a TODO eventing
