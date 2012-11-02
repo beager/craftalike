@@ -1,5 +1,8 @@
 package game;
 
+import game.blocks.Block;
+import game.blocks.BlockManager;
+
 import java.awt.Font;
 import java.io.File;
 import java.io.InputStream;
@@ -36,14 +39,16 @@ public class Game {
 	
 	public static final int TEXT_LINE_HEIGHT = 18;
 	
-	public int fps;
-	public int ups;
+	public static int fps;
+	public static int ups;
 	
 	private static final boolean FULLSCREEN = false;
 	private static final boolean VSYNC = false;
 	public static final boolean TEXTURES = true;
 	
 	private TrueTypeFont font;
+	
+	public static BlockManager blockManager = new BlockManager();
 	
 	public static Vector4f AMBIENCE_COLOR = new Vector4f(0.05f, 0.05f, 0.05f, 1.0f);
 	
@@ -65,7 +70,6 @@ public class Game {
 	private int displayUps;
 	private boolean debugScreen = false;
 	public static long deltaTime;
-	private Cube targetCube;
 	private boolean playMusic = true;
 	private boolean pickBlock = false;
 	private boolean placeBlock = false;
@@ -113,8 +117,6 @@ public class Game {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		targetCube = new Cube(new Vector3f(0f,0f,0f), new Vector3f(1f,1f,1f), new Vector4f(0f,0f,0f,1f), 0, TextureStore.getTexture("res/pix-stone.png"));
 		
 		if (playMusic ) Music.playMusic();
 
@@ -222,7 +224,7 @@ public class Game {
 	
 	public void update() {
 		camera.hasGravitiedThisFrame = false;
-		Lighting.setIsUnderwater(terrain.getCubeTypeAtVector(camera.coordinates) == Cube.TYPE_WATER);
+		Lighting.setIsUnderwater(terrain.getCubeTypeAtVector(camera.coordinates) == Block.TYPE_WATER);
 		float movementSpeed = flyMode ? MOVEMENT_SPEED_FLYMODE : MOVEMENT_SPEED;
 		if (Lighting.isUnderwater) movementSpeed *= 0.3;
 		
@@ -267,8 +269,6 @@ public class Game {
 		}
 		
 		camera.updateLookingAt();
-		Vector3f rounded = new Vector3f((float) Math.floor(camera.target.x), (float) Math.floor(camera.target.y), (float) Math.floor(camera.target.z));
-		targetCube.setPos(rounded);
 		
 		terrain.updateVisibleChunks(camera.coordinates);
 		
@@ -304,8 +304,8 @@ public class Game {
 		GL11.glShadeModel(GL11.GL_SMOOTH); 
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 	}
 	
 	public void render3d() {
@@ -357,7 +357,6 @@ public class Game {
 			renderTextLine(i++, "y: " + camera.coordinates.y );
 			renderTextLine(i++, "z: " + camera.coordinates.z );
 			renderTextLine(i++, displayFps + " fps, " + displayUps + " ups");
-			renderTextLine(i++, "looking at: " + camera.target.x + ", " + camera.target.y + ", " + camera.target.z);
 			int totalMem = (int) Runtime.getRuntime().totalMemory() / (1000000);
 			int usedMem = totalMem - ((int) Runtime.getRuntime().freeMemory() / (1000000));
 			renderTextLine(i++, "mem/total: " + usedMem + "/" + totalMem);

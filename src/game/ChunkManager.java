@@ -12,7 +12,7 @@ public class ChunkManager {
 	private HashMap<String, Chunk> sleepingChunks = new HashMap<String, Chunk>();
 	private int seed;
 
-	private static int chunkNum = 4;
+	private static int chunkNum = 10;
 
 	public ChunkManager() {
 		Random rand = new Random();
@@ -69,14 +69,16 @@ public class ChunkManager {
 			return;
 		}
 		
-		for (int x = inChunkX - chunkNum; x <= inChunkX + chunkNum; x++) {
-			for (int z = inChunkZ - chunkNum; z <= inChunkZ + chunkNum; z++) {
-				hashKey = String.valueOf(x) + "," + String.valueOf(z);
-				if (!chunkMap.containsKey(hashKey)
-						&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO eventing
-				{
-					getChunk(x, z);
-					return;
+		for (int foo = 0; foo < chunkNum; foo++) {
+			for (int x = inChunkX - foo; x <= inChunkX + foo; x++) {
+				for (int z = inChunkZ - foo; z <= inChunkZ + foo; z++) {
+					hashKey = String.valueOf(x) + "," + String.valueOf(z);
+					if (!chunkMap.containsKey(hashKey)
+							&& (Game.ups % 20 == 0)) // lol throttling, actually a TODO eventing
+					{
+						getChunk(x, z);
+						return;
+					}
 				}
 			}
 		}
@@ -109,7 +111,6 @@ public class ChunkManager {
 
 		final int TERRAIN_MAX_HEIGHT = 32;
 		final int TERRAIN_MIN_HEIGHT = 12;
-		final int TERRAIN_SMOOTH_LEVEL = 0;
 
 		final int TERRAIN_GEN_SEED = seed;
 		final float TERRAIN_GEN_NOISE_SIZE = 0.01f;
@@ -117,7 +118,7 @@ public class ChunkManager {
 		final int TERRAIN_GEN_OCTAVES = 6;
 
 		chunkMap.get(hashKey).generateTerrain(TERRAIN_MAX_HEIGHT,
-				TERRAIN_MIN_HEIGHT, TERRAIN_SMOOTH_LEVEL, TERRAIN_GEN_SEED,
+				TERRAIN_MIN_HEIGHT, TERRAIN_GEN_SEED,
 				TERRAIN_GEN_NOISE_SIZE, TERRAIN_GEN_PERSISTENCE,
 				TERRAIN_GEN_OCTAVES, Game.TEXTURES);
 	}

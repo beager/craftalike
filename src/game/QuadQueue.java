@@ -23,8 +23,10 @@ public class QuadQueue {
 	public static void renderAll() {
 		for (Iterator<String> tids = quadQueues.keySet().iterator(); tids.hasNext();) {
 			String tid = tids.next();
-		
+
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, Integer.parseInt(tid)); 
 			GL11.glBegin(GL11.GL_QUADS);
 			
@@ -51,7 +53,6 @@ public class QuadQueue {
 			
 			GL11.glDisable(GL11.GL_TEXTURE_2D);
 			GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-			
 		}
 	}
 

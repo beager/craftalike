@@ -22,7 +22,8 @@ public class TextureStore {
 		} else {
 			try {
 				Texture tex = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream(path));
-				createMipmaps(tex);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 				textureMap.put(path, tex);
 				return tex;
 			} catch (IOException e) {
