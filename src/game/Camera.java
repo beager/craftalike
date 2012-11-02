@@ -53,7 +53,7 @@ public class Camera {
 		Vector3f newCoordinates = new Vector3f(coordinates.x, coordinates.y, coordinates.z);
 		
 		if (newCoordinates.y < -0.0f)
-			newCoordinates.y = 80.0f;
+			newCoordinates.y = 128.0f;
 		
 		if(direction == FORWARD) {
 			if(flyMode) {

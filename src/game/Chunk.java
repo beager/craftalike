@@ -5,7 +5,7 @@ import org.newdawn.slick.opengl.Texture;
 
 public class Chunk {
 	
-	private static final int WATER_LEVEL = 64;
+	private static final int WATER_LEVEL = 65;
 
 	// Size of the terrain measured in cubes
 	public Vector3 arraySize;
@@ -327,7 +327,7 @@ public class Chunk {
 			}
 		} else {
 			color = new Vector4f(0.3f, 0.3f, 0.3f, 1.0f);
-			texture = concreteTexture;
+			texture = stoneTexture;
 			type = Cube.TYPE_STONE;
 		}
 		
@@ -438,7 +438,7 @@ public class Chunk {
 	public int getCubeTypeAtVector(Vector3f pos) {
 		Vector3 index = new Vector3(
 			(int) Math.floor(((pos.x % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE),
-			(int) Math.floor(((pos.y % Game.CHUNK_HEIGHT) + Game.CHUNK_HEIGHT) % Game.CHUNK_HEIGHT),
+			(int) Math.floor((pos.y + Game.CHUNK_HEIGHT) % Game.CHUNK_HEIGHT),
 			(int) Math.floor(((pos.z % Game.CHUNK_SIZE) + Game.CHUNK_SIZE) % Game.CHUNK_SIZE)
 		);
 

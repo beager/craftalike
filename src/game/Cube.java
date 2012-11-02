@@ -1,10 +1,5 @@
 package game;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.ARBVertexBufferObject;
-import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.opengl.Texture;
 
 public class Cube {
