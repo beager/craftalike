@@ -224,7 +224,7 @@ public class Game {
 	
 	public void update() {
 		camera.hasGravitiedThisFrame = false;
-		Lighting.setIsUnderwater(terrain.getCubeTypeAtVector(camera.coordinates) == Block.TYPE_WATER);
+		Lighting.setIsUnderwater(terrain.getCubeTypeAtVector(camera.coordinates) == BlockManager.TYPE_WATER);
 		float movementSpeed = flyMode ? MOVEMENT_SPEED_FLYMODE : MOVEMENT_SPEED;
 		if (Lighting.isUnderwater) movementSpeed *= 0.3;
 		
