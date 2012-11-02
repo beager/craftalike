@@ -54,25 +54,25 @@ public class Block {
 		}
 		
 		if (offset.x == Game.CHUNK_SIZE - 1) {
-			b[4] = true;
+			b[4] = false;
 		} else {
 			b[4] = terrain[offset.x + 1][offset.y][offset.z] < 0;
 		}
 		
 		if (offset.x == 0) {
-			b[5] = true;
+			b[5] = false;
 		} else {
 			b[5] = terrain[offset.x - 1][offset.y][offset.z] < 0;
 		}
 		
 		if (offset.z == Game.CHUNK_SIZE - 1) {
-			b[2] = true;
+			b[2] = false;
 		} else {
 			b[2] = terrain[offset.x][offset.y][offset.z + 1] < 0;
 		}
 		
 		if (offset.z == 0) {
-			b[3] = true;
+			b[3] = false;
 		} else {
 			b[3] = terrain[offset.x][offset.y][offset.z - 1] < 0;
 		}
