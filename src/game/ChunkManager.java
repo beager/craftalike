@@ -12,7 +12,7 @@ public class ChunkManager {
 	private HashMap<String, Chunk> sleepingChunks = new HashMap<String, Chunk>();
 	private int seed;
 
-	private static int chunkNum = 10;
+	private static int chunkNum = 5;
 
 	public ChunkManager() {
 		Random rand = new Random();
@@ -40,9 +40,7 @@ public class ChunkManager {
 		inChunkX = pos.x < 0 ? (int) (pos.x - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.x / Game.CHUNK_SIZE;
 		inChunkZ = pos.z < 0 ? (int) (pos.z - Game.CHUNK_SIZE) / Game.CHUNK_SIZE : (int) pos.z / Game.CHUNK_SIZE;
 		
-		// check existing chunks
-		// if chunk is too far, remove it
-		// if chunk is near enough, it's ok.
+		// if the chunk exists but is too far from the player, add it to the list of deletions.
 		ArrayList<String> deletions = new ArrayList<String>();
 		for (Iterator<String> chunkIds = chunkMap.keySet().iterator(); chunkIds
 				.hasNext();) {
@@ -54,6 +52,8 @@ public class ChunkManager {
 			}
 		}
 
+		// All "deleted" chunks are shipped off to sleepingChunks, where they don't render,
+		// and they can get brought back in later.
 		for (Iterator<String> toDelete = deletions.iterator(); toDelete
 				.hasNext();) {
 			String deletion = toDelete.next();
@@ -61,20 +61,16 @@ public class ChunkManager {
 			chunkMap.remove(deletion);
 		}
 		
+		// This loads chunks around the player if they don't exist already.
+		// It starts in the chunk the player's in, and proceeds outward until it hits
+		// the radius given in chunkNum
 		String hashKey = String.valueOf(inChunkX) + "," + String.valueOf(inChunkZ);
-		if (!chunkMap.containsKey(hashKey)
-				&& (Game.deltaTime < 1000.0f / 60.0f)) // lol throttling, actually a TODO
-		{
-			getChunk(inChunkX, inChunkZ);
-			return;
-		}
-		
 		for (int radius = 0; radius < chunkNum; radius++) {
 			for (int x = inChunkX - radius; x <= inChunkX + radius; x++) {
 				for (int z = inChunkZ - radius; z <= inChunkZ + radius; z++) {
 					hashKey = String.valueOf(x) + "," + String.valueOf(z);
 					if (!chunkMap.containsKey(hashKey)
-							&& (Game.ups % 20 == 0)) // lol throttling, actually a TODO eventing
+							&& (Game.ups % 10 == 0)) // lol throttling, actually a TODO eventing
 					{
 						getChunk(x, z);
 						return;

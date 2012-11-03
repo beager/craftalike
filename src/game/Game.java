@@ -1,6 +1,5 @@
 package game;
 
-import game.blocks.Block;
 import game.blocks.BlockManager;
 
 import java.awt.Font;

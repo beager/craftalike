@@ -38,43 +38,43 @@ public class Block {
 
 	}
 	
-	public static boolean[] determineSolidSides(int[][][] terrain, Vector3 offset) {
+	public static boolean[] determineSolidSides(Chunk[] chunk, Vector3 offset) {
 		boolean[] b = new boolean[6]; // top bottom front back left right
 		
 		if (offset.y == Game.CHUNK_HEIGHT - 1) {
 			b[0] = true;
 		} else {
-			b[0] = terrain[offset.x][offset.y + 1][offset.z] < 0;
+			b[0] = chunk[0].terrain[offset.x][offset.y + 1][offset.z] < 0;
 		}
 		
 		if (offset.y == 0) {
 			b[1] = true;
 		} else {
-			b[1] = terrain[offset.x][offset.y - 1][offset.z] < 0;
+			b[1] = chunk[0].terrain[offset.x][offset.y - 1][offset.z] < 0;
 		}
 		
 		if (offset.x == Game.CHUNK_SIZE - 1) {
 			b[4] = false;
 		} else {
-			b[4] = terrain[offset.x + 1][offset.y][offset.z] < 0;
+			b[4] = chunk[0].terrain[offset.x + 1][offset.y][offset.z] < 0;
 		}
 		
 		if (offset.x == 0) {
 			b[5] = false;
 		} else {
-			b[5] = terrain[offset.x - 1][offset.y][offset.z] < 0;
+			b[5] = chunk[0].terrain[offset.x - 1][offset.y][offset.z] < 0;
 		}
 		
 		if (offset.z == Game.CHUNK_SIZE - 1) {
 			b[2] = false;
 		} else {
-			b[2] = terrain[offset.x][offset.y][offset.z + 1] < 0;
+			b[2] = chunk[0].terrain[offset.x][offset.y][offset.z + 1] < 0;
 		}
 		
 		if (offset.z == 0) {
 			b[3] = false;
 		} else {
-			b[3] = terrain[offset.x][offset.y][offset.z - 1] < 0;
+			b[3] = chunk[0].terrain[offset.x][offset.y][offset.z - 1] < 0;
 		}
 		
 		return b;
@@ -82,7 +82,7 @@ public class Block {
 	
 	/* Renders the cube. */
 	public void render(Chunk[] thisChunk, Vector3 offset) {
-		boolean b[] = Block.determineSolidSides(thisChunk[0].terrain, offset);
+		boolean b[] = Block.determineSolidSides(thisChunk, offset);
 		
 		Vector3f pos1 = new Vector3f((float) thisChunk[0].translation.x + offset.x, (float) offset.y, (float) thisChunk[0].translation.z + offset.z);
 		Vector3f pos2 = new Vector3f(pos1.x + 1f, pos1.y + 1f, pos1.z + 1f);

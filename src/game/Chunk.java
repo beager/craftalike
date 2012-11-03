@@ -131,7 +131,7 @@ public class Chunk {
 								(SimplexNoise.noise(
 									((float) x + translation.x) / 50,
 									((float) z + translation.z) / 50
-								) + .5d) 
+								) + 0.7d) 
 							)
 						) {
 							if ((terrain[x][y][z] > -1) && (terrain[x][y][z] != Block.TYPE_WATER))
