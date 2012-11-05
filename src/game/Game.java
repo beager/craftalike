@@ -97,8 +97,6 @@ public class Game {
 		terrain = new ChunkManager();
 		
 		Vector3f startPos = new Vector3f(8.0f, 129.0f, 8.0f);
-		
-		//terrain.generate(startPos);
 
 		// Create the camera
 		camera = new Camera(startPos, new Vector3f(0.0f, 0.0f, 0.0f), terrain);
@@ -117,7 +115,7 @@ public class Game {
 			e.printStackTrace();
 		}
 		
-		if (playMusic ) Music.playMusic();
+		if (playMusic) Music.playMusic();
 
 		startTime = System.currentTimeMillis();
 
@@ -155,7 +153,6 @@ public class Game {
 				fps = 0;	
 			}
 			
-			
 			// Check for pressed keys
 			while (Keyboard.next()) {
 				if (Keyboard.getEventKeyState()) {
@@ -172,6 +169,24 @@ public class Game {
 						Mouse.setGrabbed(!Mouse.isGrabbed());
 					} else if (Keyboard.getEventKey() == Keyboard.KEY_P) {
 						debugScreen  = !debugScreen;
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_1) {
+						ItemBox.setSelectedIndex(0);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_2) {
+						ItemBox.setSelectedIndex(1);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_3) {
+						ItemBox.setSelectedIndex(2);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_4) {
+						ItemBox.setSelectedIndex(3);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_5) {
+						ItemBox.setSelectedIndex(4);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_6) {
+						ItemBox.setSelectedIndex(5);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_7) {
+						ItemBox.setSelectedIndex(6);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_8) {
+						ItemBox.setSelectedIndex(7);
+					} else if (Keyboard.getEventKey() == Keyboard.KEY_9) {
+						ItemBox.setSelectedIndex(8);
 					}
 				}
 			}
@@ -259,6 +274,14 @@ public class Game {
 				mouseDelayer = 20;
 			}
 			
+			//System.out.println(Mouse.getDWheel());
+			
+			int dwheel = Mouse.getDWheel();
+			if (dwheel < 0) {
+				ItemBox.setSelectedIndex(ItemBox.getSelectedIndex() + 1);
+			} else if (dwheel > 0) {
+				ItemBox.setSelectedIndex(ItemBox.getSelectedIndex() - 1);
+			}
 			if (mouseDelayer  > 0) mouseDelayer--;
 			
 		// Apply gravity
@@ -338,16 +361,20 @@ public class Game {
 	        // draw quad
 	        GL11.glBegin(GL11.GL_QUADS);
 	            GL11.glVertex2f(0,0);
-	            GL11.glVertex2f(Display.getWidth(),0);
-	            GL11.glVertex2f(Display.getWidth(),Display.getHeight());
-	            GL11.glVertex2f(0,Display.getHeight());
+	            GL11.glVertex2f(Display.getDesktopDisplayMode().getWidth(),0);
+	            GL11.glVertex2f(Display.getDesktopDisplayMode().getWidth(),Display.getDesktopDisplayMode().getHeight());
+	            GL11.glVertex2f(0,Display.getDesktopDisplayMode().getHeight());
 	        GL11.glEnd();
+	        
+	        
 	        
 	        GL11.glDisable(GL11.GL_BLEND);
 		}
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glShadeModel(GL11.GL_SMOOTH);
+		
+		ItemBox.render();
 		
 		TextureImpl.unbind();
 		if (debugScreen) {
@@ -362,8 +389,12 @@ public class Game {
 			
 		}
 		
+		
+		
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		
+		
 	}
 	
 	public void render() {

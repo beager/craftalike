@@ -181,7 +181,7 @@ public class Chunk {
 				for(int x = 0; x < arraySize.x; x++) {
 					for(int y = 0; y < arraySize.y; y++) {
 						if(terrain[x][y][z] > -1) {
-							Game.blockManager.renderType(chunkArray, terrain[x][y][z], new Vector3(x,y,z));
+							BlockManager.renderType(chunkArray, terrain[x][y][z], new Vector3(x,y,z));
 						}
 					}
 				}
@@ -222,7 +222,7 @@ public class Chunk {
 		);
 
 		if ((index.x >= 0) && (index.y >= 0) && (index.z >= 0)) {
-			terrain[index.x][index.y][index.z] = 1; // todo change
+			terrain[index.x][index.y][index.z] = ItemBox.getSelectedBlock(); // todo change
 			release();
 			render();
 		}

@@ -13,4 +13,8 @@ public class WaterBlock extends Block {
 				"res/pix-water.png"
 				};
 	}
+	
+	public boolean isSolid() {
+		return false;
+	}
 }

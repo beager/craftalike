@@ -70,7 +70,7 @@ public class ChunkManager {
 				for (int z = inChunkZ - radius; z <= inChunkZ + radius; z++) {
 					hashKey = String.valueOf(x) + "," + String.valueOf(z);
 					if (!chunkMap.containsKey(hashKey)
-							&& (Game.ups % 10 == 0)) // lol throttling, actually a TODO eventing
+							&& (Game.ups % 5 == 0)) // lol throttling, actually a TODO eventing
 					{
 						getChunk(x, z);
 						return;

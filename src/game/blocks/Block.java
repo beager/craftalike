@@ -13,15 +13,14 @@ public class Block {
 	
 	public static int type = Block.TYPE_NONE;
 	
+	public boolean isSolid = true;
+	
 	public static int TYPE_NONE = -1;
 	public static int TYPE_DIRT = 0;
 	public static int TYPE_GRASS = 1;
 	public static int TYPE_WATER = 2;
 	public static int TYPE_STONE = 3;
 	public static int TYPE_SAND = 4;
-	
-	// Properties
-	public static boolean isSolid = true;
 	
 	public String[] getTexturePaths() {
 		return new String[]{
@@ -41,6 +40,8 @@ public class Block {
 	public static boolean[] determineSolidSides(Chunk[] chunk, Vector3 offset) {
 		boolean[] b = new boolean[6]; // top bottom front back left right
 		
+		int blockId = -1;
+		
 		if (offset.y == Game.CHUNK_HEIGHT - 1) {
 			b[0] = true;
 		} else {
@@ -53,33 +54,48 @@ public class Block {
 			b[1] = chunk[0].terrain[offset.x][offset.y - 1][offset.z] < 0;
 		}
 		
+		/**
+		 * Major TODO from here on out is to make the b[n] = true blocks look
+		 * inside adjacent chunks to determine if they should be on or off.
+		 * This should trigger lazy generation of the adjacent chunk if it doesn't
+		 * already exist, but make sure that generation and rendering are separate
+		 * steps, so calling this won't cause an interminable chunk-load death. 
+		 */
 		if (offset.x == Game.CHUNK_SIZE - 1) {
-			b[4] = false;
+			b[4] = true;
 		} else {
 			b[4] = chunk[0].terrain[offset.x + 1][offset.y][offset.z] < 0;
+			//b[4] = false;
 		}
 		
 		if (offset.x == 0) {
-			b[5] = false;
+			b[5] = true;
 		} else {
 			b[5] = chunk[0].terrain[offset.x - 1][offset.y][offset.z] < 0;
+			//b[5] = blockId != -1 ? BlockManager.blocks[blockId].isSolid() : false;
+			//b[5] = false;
 		}
 		
 		if (offset.z == Game.CHUNK_SIZE - 1) {
-			b[2] = false;
+			b[2] = true;
 		} else {
 			b[2] = chunk[0].terrain[offset.x][offset.y][offset.z + 1] < 0;
-		}
+			//b[2] = blockId != -1 ? BlockManager.blocks[blockId].isSolid() : false;
+			//b[2] = false;
+			}
 		
 		if (offset.z == 0) {
-			b[3] = false;
+			b[3] = true;
 		} else {
 			b[3] = chunk[0].terrain[offset.x][offset.y][offset.z - 1] < 0;
+			//b[3] = blockId != -1 ? BlockManager.blocks[blockId].isSolid() : false;
+			//b[3] = false;
 		}
 		
 		return b;
 	}
-	
+
+
 	/* Renders the cube. */
 	public void render(Chunk[] thisChunk, Vector3 offset) {
 		boolean b[] = Block.determineSolidSides(thisChunk, offset);

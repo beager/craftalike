@@ -16,7 +16,7 @@ public class Music {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//oggStream.playAsMusic(1.0f, 1.0f, true);
+		oggStream.playAsMusic(1.0f, 1.0f, true);
 	}
 
 }
